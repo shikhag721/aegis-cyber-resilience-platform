@@ -4,6 +4,8 @@ import { AuthProvider, useAuth } from "./auth/AuthContext";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
 import Assets from "./pages/Assets";
+import ThreatModeling from "./pages/ThreatModeling";
+import AttackPaths from "./pages/AttackPaths";
 import ModulePlaceholder from "./pages/ModulePlaceholder";
 
 function ProtectedRoutes() {
@@ -13,8 +15,6 @@ function ProtectedRoutes() {
 }
 
 const PLACEHOLDER_MODULES: { path: string; title: string; phase: string }[] = [
-  { path: "threat-modeling", title: "Threat Modeling", phase: "Phase 2" },
-  { path: "attack-paths", title: "Attack Paths", phase: "Phase 2" },
   { path: "vulnerabilities", title: "Vulnerability Management", phase: "Phase 4" },
   { path: "risk-register", title: "Risk Register", phase: "Phase 3" },
   { path: "iam", title: "IAM Risk", phase: "Phase 5" },
@@ -42,6 +42,8 @@ export default function App() {
         <Route element={<ProtectedRoutes />}>
           <Route path="/dashboard" element={<Dashboard />} />
           <Route path="/assets" element={<Assets />} />
+          <Route path="/threat-modeling" element={<ThreatModeling />} />
+          <Route path="/attack-paths" element={<AttackPaths />} />
           {PLACEHOLDER_MODULES.map((m) => (
             <Route
               key={m.path}

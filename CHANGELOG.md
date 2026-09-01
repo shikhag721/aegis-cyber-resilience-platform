@@ -34,4 +34,21 @@ Phase-by-phase log, per `docs/decisions/0000-project-phasing.md`.
 - 18 new backend tests (31 total); full Docker Compose stack rebuilt and
   re-verified end to end against real Postgres.
 
+## Phase 2 — Threat modeling + attack paths
+- `ThreatActor`, `Threat` (with MITRE ATT&CK mapping + an enforced
+  `why_relevant` field - a validator rejects vague/generic justifications),
+  `AttackPath`/`AttackPathStep` models.
+- Attack paths scored by likelihood × impact (same 1-25 scale the Phase 3
+  risk engine will use), sorted highest-first.
+- Northstar threat model: 3 threat actors, 6 threats with specific
+  asset-tied justifications, 3 attack paths - including the Section 8
+  worked example (credential compromise → API → payment service →
+  customer database) plus an insider path and a third-party/vendor path.
+- `docs/threat-models/northstar-threat-model.md` narrative + trust-boundary
+  diagram.
+- Frontend Threat Modeling and Attack Paths pages (expandable step detail,
+  score badges) wired to the real API.
+- 10 new backend tests (41 total); re-verified end to end via Docker
+  Compose against real Postgres, including idempotent re-seeding.
+
 *(Subsequent phases appended here as completed.)*

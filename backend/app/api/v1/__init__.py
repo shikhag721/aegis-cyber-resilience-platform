@@ -7,9 +7,10 @@ glance rather than hunting through main.py.
 """
 from fastapi import APIRouter
 
-from app.api.v1 import assets, auth, health
+from app.api.v1 import assets, auth, health, threat_modeling
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
 api_router.include_router(auth.router, tags=["auth"])
 api_router.include_router(assets.router)
+api_router.include_router(threat_modeling.router)

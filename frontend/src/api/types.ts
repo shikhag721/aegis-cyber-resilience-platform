@@ -22,6 +22,46 @@ export type DataClassification =
   | "restricted"
   | "highly_restricted";
 
+export interface ThreatActor {
+  id: number;
+  name: string;
+  category: string;
+  motivation: string;
+  sophistication: string;
+  description: string;
+}
+
+export interface Threat {
+  id: number;
+  name: string;
+  description: string;
+  threat_actor_id: number | null;
+  mitre_technique_id: string | null;
+  mitre_technique_name: string | null;
+  why_relevant: string;
+}
+
+export interface AttackPathStep {
+  id: number;
+  sequence: number;
+  description: string;
+  asset_id: number | null;
+  threat_id: number | null;
+}
+
+export interface AttackPath {
+  id: number;
+  name: string;
+  description: string;
+  entry_point: string;
+  target_asset_id: number;
+  likelihood: number;
+  impact: number;
+  score: number;
+  notes: string;
+  steps: AttackPathStep[];
+}
+
 export interface Asset {
   id: number;
   asset_tag: string;

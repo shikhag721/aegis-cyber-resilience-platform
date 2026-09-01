@@ -24,9 +24,11 @@ from app.seed_data.northstar_threats import (
     NORTHSTAR_THREAT_ACTORS,
     NORTHSTAR_THREATS,
 )
+from app.seed_data.northstar_vulnerabilities import NORTHSTAR_VULNERABILITIES
 from app.services import asset as asset_service
 from app.services import risk as risk_service
 from app.services import threat as threat_service
+from app.services import vulnerability as vuln_service
 from app.services.auth import create_user, get_user_by_username
 
 DEMO_USERS = [
@@ -159,6 +161,35 @@ def seed_risks(db, tag_to_id: dict[str, int], threat_name_to_id: dict[str, int])
     print(f"Created {len(NORTHSTAR_RISKS)} risk register entries.")
 
 
+def seed_vulnerabilities(db, tag_to_id: dict[str, int]) -> None:
+    if vuln_service.list_vulnerabilities(db):
+        print("Vulnerabilities already seeded - skipping.")
+        return
+
+    assessed = 0
+    for item in NORTHSTAR_VULNERABILITIES:
+        vuln = vuln_service.create_vulnerability(
+            db,
+            dict(
+                cve_id=item["cve_id"],
+                title=item["title"],
+                description=item["description"],
+                asset_id=tag_to_id[item["asset_tag"]],
+                cvss_score=item["cvss_score"],
+                known_exploited=item["known_exploited"],
+                compensating_controls=item["compensating_controls"],
+            ),
+        )
+        if item["assess"]:
+            vuln_service.assess_vulnerability(
+                db, vuln, control_effectiveness=0.2, risk_appetite="moderate"
+            )
+            assessed += 1
+    print(
+        f"Created {len(NORTHSTAR_VULNERABILITIES)} vulnerabilities ({assessed} assessed for business risk)."
+    )
+
+
 def main():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
@@ -167,6 +198,7 @@ def main():
         tag_to_id = seed_assets(db)
         threat_name_to_id = seed_threats(db, tag_to_id)
         seed_risks(db, tag_to_id, threat_name_to_id)
+        seed_vulnerabilities(db, tag_to_id)
     finally:
         db.close()
 

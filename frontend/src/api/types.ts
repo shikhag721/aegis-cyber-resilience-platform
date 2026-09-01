@@ -100,6 +100,22 @@ export interface RiskRecord {
   status: string;
 }
 
+export interface Vulnerability {
+  id: number;
+  cve_id: string | null;
+  title: string;
+  description: string;
+  asset_id: number;
+  cvss_score: number;
+  cvss_severity_band: string;
+  known_exploited: boolean;
+  compensating_controls: string;
+  remediation_status: string;
+  owner: string;
+  due_date: string | null;
+  risk_record_id: number | null;
+}
+
 export interface Asset {
   id: number;
   asset_tag: string;

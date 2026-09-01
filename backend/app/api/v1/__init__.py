@@ -7,7 +7,7 @@ glance rather than hunting through main.py.
 """
 from fastapi import APIRouter
 
-from app.api.v1 import assets, auth, health, risk, threat_modeling
+from app.api.v1 import assets, auth, health, risk, threat_modeling, vulnerabilities
 
 api_router = APIRouter()
 api_router.include_router(health.router, tags=["health"])
@@ -15,3 +15,4 @@ api_router.include_router(auth.router, tags=["auth"])
 api_router.include_router(assets.router)
 api_router.include_router(threat_modeling.router)
 api_router.include_router(risk.router)
+api_router.include_router(vulnerabilities.router)

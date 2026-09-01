@@ -74,4 +74,25 @@ Phase-by-phase log, per `docs/decisions/0000-project-phasing.md`.
 - 24 new backend tests (65 total); re-verified end to end via Docker
   Compose against real Postgres.
 
+## Phase 4 — Vulnerability management
+- `Vulnerability` model (CVE, CVSS, known-exploited flag, compensating
+  controls, remediation status/owner/due date) with a single, explicit
+  `cvss_to_severity_band()` translation point - the risk engine never sees
+  a raw CVSS number, only the resulting band, keeping technical severity
+  and business risk visibly distinct.
+- `assess_vulnerability` bridges to the Phase 3 risk engine using the
+  affected asset's real context, linking the resulting `RiskRecord` back
+  onto the vulnerability.
+- Seeded with real, publicly known CVE numbers (Log4Shell-class, xz
+  backdoor-class, libwebp-class) applied to fictional Northstar assets:
+  Log4Shell (CVSS 10.0, known-exploited) on the isolated legacy test
+  server assesses to **residual risk 4 (Low)**, while a CVSS 8.8 finding
+  on the internet-facing Customer Web Portal assesses to **residual risk
+  18 (Critical)** - the Section 9 principle, live in real seeded data,
+  not just a unit test.
+- Frontend Vulnerability Management page: CVSS vs. business-risk shown
+  side by side, with a one-click "Assess Business Risk" action.
+- 11 new backend tests (76 total); re-verified end to end via Docker
+  Compose against real Postgres.
+
 *(Subsequent phases appended here as completed.)*

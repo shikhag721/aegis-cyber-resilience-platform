@@ -18,6 +18,7 @@ from app.db.session import SessionLocal, engine
 from app.models.risk import RiskStatus, TreatmentDecision
 from app.models.user import ROLE_ADMIN, ROLE_RISK_ANALYST, ROLE_VIEWER
 from app.seed_data.northstar_assets import NORTHSTAR_ASSET_DEPENDENCIES, NORTHSTAR_ASSETS
+from app.seed_data.northstar_iam_cloud import NORTHSTAR_CLOUD_FINDINGS, NORTHSTAR_IDENTITY_ACCOUNTS
 from app.seed_data.northstar_risks import NORTHSTAR_RISKS
 from app.seed_data.northstar_threats import (
     NORTHSTAR_ATTACK_PATHS,
@@ -26,6 +27,8 @@ from app.seed_data.northstar_threats import (
 )
 from app.seed_data.northstar_vulnerabilities import NORTHSTAR_VULNERABILITIES
 from app.services import asset as asset_service
+from app.services import cloud as cloud_service
+from app.services import iam as iam_service
 from app.services import risk as risk_service
 from app.services import threat as threat_service
 from app.services import vulnerability as vuln_service
@@ -190,6 +193,28 @@ def seed_vulnerabilities(db, tag_to_id: dict[str, int]) -> None:
     )
 
 
+def seed_iam_and_cloud(db, tag_to_id: dict[str, int]) -> None:
+    if iam_service.list_identity_accounts(db):
+        print("IAM accounts already seeded - skipping.")
+    else:
+        for item in NORTHSTAR_IDENTITY_ACCOUNTS:
+            data = dict(item)
+            asset_tag = data.pop("asset_tag", None)
+            data["associated_asset_id"] = tag_to_id.get(asset_tag) if asset_tag else None
+            iam_service.create_identity_account(db, data)
+        print(f"Created {len(NORTHSTAR_IDENTITY_ACCOUNTS)} IAM accounts.")
+
+    if cloud_service.list_findings(db):
+        print("Cloud findings already seeded - skipping.")
+    else:
+        for item in NORTHSTAR_CLOUD_FINDINGS:
+            data = dict(item)
+            asset_tag = data.pop("asset_tag", None)
+            data["asset_id"] = tag_to_id.get(asset_tag) if asset_tag else None
+            cloud_service.create_finding(db, data)
+        print(f"Created {len(NORTHSTAR_CLOUD_FINDINGS)} cloud security findings.")
+
+
 def main():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
@@ -199,6 +224,7 @@ def main():
         threat_name_to_id = seed_threats(db, tag_to_id)
         seed_risks(db, tag_to_id, threat_name_to_id)
         seed_vulnerabilities(db, tag_to_id)
+        seed_iam_and_cloud(db, tag_to_id)
     finally:
         db.close()
 

@@ -116,6 +116,39 @@ export interface Vulnerability {
   risk_record_id: number | null;
 }
 
+export interface IdentityAccount {
+  id: number;
+  username: string;
+  display_name: string;
+  account_type: string;
+  department: string;
+  employment_status: string;
+  is_enabled: boolean;
+  is_privileged: boolean;
+  mfa_enabled: boolean;
+  production_access: boolean;
+  permissions: string[];
+  last_login_at: string | null;
+}
+
+export interface IAMFinding {
+  account_username: string;
+  finding_type: string;
+  severity: string;
+  detail: string;
+}
+
+export interface CloudFinding {
+  id: number;
+  resource_name: string;
+  asset_id: number | null;
+  finding_type: string;
+  severity: string;
+  description: string;
+  recommendation: string;
+  status: string;
+}
+
 export interface Asset {
   id: number;
   asset_tag: string;

@@ -16,6 +16,7 @@ ignore = ["S101"]  # allow assert in tests
 "tests/*" = ["E402", "S106"]
 "scripts/*" = ["S106"]  # seed script's documented local-demo default password
 "alembic/env.py" = ["E402", "I001"]  # sys.path must be set before importing app modules
+"app/models/cloud.py" = ["S105"]  # CloudFindingType.EXPOSED_SECRET is an enum name, not a credential
 
 [tool.ruff.lint.flake8-bugbear]
 # FastAPI's dependency-injection pattern (`param: T = Depends(...)`) is

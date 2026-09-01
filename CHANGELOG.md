@@ -95,4 +95,24 @@ Phase-by-phase log, per `docs/decisions/0000-project-phasing.md`.
 - 11 new backend tests (76 total); re-verified end to end via Docker
   Compose against real Postgres.
 
+## Phase 5 — IAM risk + cloud security posture
+- `IdentityAccount` model + deterministic IAM finding engine detecting:
+  orphan accounts (terminated but still enabled), missing MFA on
+  privileged access, inactive accounts (90+ day threshold), inappropriate
+  production access by department, segregation-of-duties conflicts (toxic
+  permission pairs), and privilege-escalation paths (privileged service
+  account + production access + no MFA). Fixed a real SQLite/Postgres
+  cross-database datetime bug caught by the test suite (naive vs.
+  timezone-aware comparison).
+- `CloudFinding` model (structured findings, not a live cloud API
+  integration - see ADR 0005): public exposure, overly permissive IAM,
+  unencrypted data, missing logging, open security groups, config drift,
+  exposed secrets.
+- Northstar seed data plants one example of every IAM finding type plus 5
+  cloud findings across 5 finding types - all correctly detected by the
+  engine.
+- Frontend IAM Risk and Cloud Security pages wired to the real API.
+- 20 new backend tests (96 total); re-verified end to end via Docker
+  Compose against real Postgres.
+
 *(Subsequent phases appended here as completed.)*

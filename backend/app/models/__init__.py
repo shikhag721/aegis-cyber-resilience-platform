@@ -2,6 +2,8 @@
 autogenerate) can discover all tables from a single import.
 """
 from app.models.asset import Asset, AssetDependency  # noqa: F401
+from app.models.cloud import CloudFinding  # noqa: F401
+from app.models.identity import IdentityAccount  # noqa: F401
 from app.models.risk import RiskRecord  # noqa: F401
 from app.models.threat import AttackPath, AttackPathStep, Threat, ThreatActor  # noqa: F401
 from app.models.user import User  # noqa: F401

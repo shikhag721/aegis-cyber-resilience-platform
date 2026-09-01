@@ -3,6 +3,7 @@ import Layout from "./components/Layout";
 import { AuthProvider, useAuth } from "./auth/AuthContext";
 import Login from "./pages/Login";
 import Dashboard from "./pages/Dashboard";
+import Assets from "./pages/Assets";
 import ModulePlaceholder from "./pages/ModulePlaceholder";
 
 function ProtectedRoutes() {
@@ -12,7 +13,6 @@ function ProtectedRoutes() {
 }
 
 const PLACEHOLDER_MODULES: { path: string; title: string; phase: string }[] = [
-  { path: "assets", title: "Asset Inventory", phase: "Phase 1" },
   { path: "threat-modeling", title: "Threat Modeling", phase: "Phase 2" },
   { path: "attack-paths", title: "Attack Paths", phase: "Phase 2" },
   { path: "vulnerabilities", title: "Vulnerability Management", phase: "Phase 4" },
@@ -41,6 +41,7 @@ export default function App() {
         <Route path="/login" element={<Login />} />
         <Route element={<ProtectedRoutes />}>
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/assets" element={<Assets />} />
           {PLACEHOLDER_MODULES.map((m) => (
             <Route
               key={m.path}

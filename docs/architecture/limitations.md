@@ -39,5 +39,32 @@ applied there.
 - AI/RAG/agent security scenarios are simulated against local test
   fixtures, not a production LLM deployment with real user traffic.
 
+## Issues found and fixed during integration testing
+
+Kept here deliberately rather than deleted, as a record that the stack was
+actually run end-to-end, not just unit tested in isolation:
+
+- **Phase 0**: the frontend's Vite dev-server proxy defaulted to
+  `http://localhost:8000` for the backend target. That works when running
+  the frontend directly on the host, but inside Docker Compose
+  "localhost" from the frontend container resolves to itself, not the
+  `backend` service — every proxied `/api/*` request returned `502 Bad
+  Gateway`. Fixed by setting `VITE_API_PROXY_TARGET=http://backend:8000`
+  as an environment variable on the `frontend` service in
+  `infra/docker/docker-compose.yml`, read by `frontend/vite.config.ts`.
+  Caught by actually curling `http://localhost:5173/api/v1/health`
+  through the browser-facing port after bringing up the full stack, not
+  by testing each container in isolation — see `docs/testing/README.md`.
+- **Phase 0**: `passlib[bcrypt]` failed its own internal self-test against
+  modern `bcrypt` releases (`ValueError: password cannot be longer than 72
+  bytes`) — an unrelated, unmaintained-library incompatibility, not a bug
+  in this code. Replaced with Argon2id via `argon2-cffi`; see ADR 0006.
+- **Phase 0**: `npm audit` flagged moderate/high vulnerabilities in the
+  pinned `vite`/`esbuild` and `react-router-dom` versions (dev-server CORS
+  exposure and an open-redirect/deserialization issue respectively).
+  Upgraded to `vite@8` + `@vitejs/plugin-react@6` and
+  `react-router-dom@7`; `npm audit` reports zero vulnerabilities after the
+  upgrade and the build/tests still pass.
+
 *(This list grows as each phase is built — see CHANGELOG.md for what has
 landed so far.)*

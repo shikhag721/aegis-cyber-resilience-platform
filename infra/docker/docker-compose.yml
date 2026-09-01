@@ -38,6 +38,13 @@ services:
       context: ../..
       dockerfile: infra/docker/frontend.Dockerfile
     restart: unless-stopped
+    environment:
+      # Inside the Docker network the backend is reachable by service name,
+      # not "localhost" (that would resolve to the frontend container
+      # itself) - see docs/architecture/limitations.md for this exact bug
+      # and fix, kept as a record of a real integration issue caught by
+      # actually running the full stack rather than each service in isolation.
+      VITE_API_PROXY_TARGET: http://backend:8000
     ports:
       - "5173:5173"
     depends_on:

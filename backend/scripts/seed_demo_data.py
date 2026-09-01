@@ -15,14 +15,17 @@ sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from app.db.base import Base
 from app.db.session import SessionLocal, engine
+from app.models.risk import RiskStatus, TreatmentDecision
 from app.models.user import ROLE_ADMIN, ROLE_RISK_ANALYST, ROLE_VIEWER
 from app.seed_data.northstar_assets import NORTHSTAR_ASSET_DEPENDENCIES, NORTHSTAR_ASSETS
+from app.seed_data.northstar_risks import NORTHSTAR_RISKS
 from app.seed_data.northstar_threats import (
     NORTHSTAR_ATTACK_PATHS,
     NORTHSTAR_THREAT_ACTORS,
     NORTHSTAR_THREATS,
 )
 from app.services import asset as asset_service
+from app.services import risk as risk_service
 from app.services import threat as threat_service
 from app.services.auth import create_user, get_user_by_username
 
@@ -76,10 +79,10 @@ def seed_assets(db) -> dict[str, int]:
     return tag_to_id
 
 
-def seed_threats(db, tag_to_id: dict[str, int]) -> None:
+def seed_threats(db, tag_to_id: dict[str, int]) -> dict[str, int]:
     if threat_service.list_threat_actors(db):
         print("Threat model already seeded - skipping.")
-        return
+        return {t.name: t.id for t in threat_service.list_threats(db)}
 
     actor_name_to_id = {}
     for data in NORTHSTAR_THREAT_ACTORS:
@@ -127,6 +130,33 @@ def seed_threats(db, tag_to_id: dict[str, int]) -> None:
             ),
         )
     print(f"Created {len(NORTHSTAR_ATTACK_PATHS)} attack paths.")
+    return threat_name_to_id
+
+
+def seed_risks(db, tag_to_id: dict[str, int], threat_name_to_id: dict[str, int]) -> None:
+    if risk_service.list_risk_records(db):
+        print("Risk register already seeded - skipping.")
+        return
+
+    for item in NORTHSTAR_RISKS:
+        record = risk_service.create_risk_record(
+            db,
+            dict(
+                title=item["title"],
+                description=item["description"],
+                asset_id=tag_to_id[item["asset_tag"]],
+                threat_id=threat_name_to_id.get(item["threat_name"]) if item["threat_name"] else None,
+                threat_severity=item["threat_severity"],
+                known_exploited=item["known_exploited"],
+                control_effectiveness=item["control_effectiveness"],
+            ),
+        )
+        if item["treatment"]:
+            treatment = dict(item["treatment"])
+            treatment["treatment_decision"] = TreatmentDecision(treatment["treatment_decision"])
+            treatment["status"] = RiskStatus(treatment["status"])
+            risk_service.update_treatment(db, record, treatment)
+    print(f"Created {len(NORTHSTAR_RISKS)} risk register entries.")
 
 
 def main():
@@ -135,7 +165,8 @@ def main():
     try:
         seed_users(db)
         tag_to_id = seed_assets(db)
-        seed_threats(db, tag_to_id)
+        threat_name_to_id = seed_threats(db, tag_to_id)
+        seed_risks(db, tag_to_id, threat_name_to_id)
     finally:
         db.close()
 

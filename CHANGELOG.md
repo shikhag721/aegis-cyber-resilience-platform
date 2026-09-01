@@ -51,4 +51,27 @@ Phase-by-phase log, per `docs/decisions/0000-project-phasing.md`.
 - 10 new backend tests (41 total); re-verified end to end via Docker
   Compose against real Postgres, including idempotent re-seeding.
 
+## Phase 3 — Risk engine
+- `app/risk_engine/`: pure, dependency-free (no FastAPI/SQLAlchemy imports)
+  likelihood × impact scoring, capped-and-summed explainable factors,
+  inherent vs. residual risk (control-effectiveness reduction), risk
+  appetite, and a treatment suggestion (Accept/Mitigate/Transfer/Avoid) -
+  always decision support, never auto-applied.
+- Verified the Section 9 CVSS-vs-business-risk principle as an executable
+  test AND live in seeded data: a Critical-severity, known-exploited
+  finding on the isolated legacy test server (AST-014) scores lower
+  (residual: Low) than a Medium-severity finding on customer-facing
+  infrastructure (residual: High).
+- `RiskRecord` model/service/API: persists engine assessments against an
+  asset (snapshotting asset criticality/classification/exposure so
+  history stays meaningful), plus a human-entered treatment decision
+  requiring a substantive reason (validator enforced).
+- 5 Northstar risk register entries seeded, two with recorded treatment
+  decisions (one Mitigate in progress, one Accept/closed).
+- `docs/risk-methodology/README.md` full write-up.
+- Frontend Risk Register page: list with contributing-factor drill-down,
+  plus a working "New Risk Assessment" intake form.
+- 24 new backend tests (65 total); re-verified end to end via Docker
+  Compose against real Postgres.
+
 *(Subsequent phases appended here as completed.)*

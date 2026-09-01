@@ -62,6 +62,44 @@ export interface AttackPath {
   steps: AttackPathStep[];
 }
 
+export interface RiskFactorEntry {
+  name: string;
+  axis: "likelihood" | "impact";
+  weight: number;
+  reason: string;
+}
+
+export interface RiskRecord {
+  id: number;
+  title: string;
+  description: string;
+  asset_id: number;
+  threat_id: number | null;
+  attack_path_id: number | null;
+  asset_criticality: string;
+  data_classification: string;
+  threat_severity: string;
+  internet_exposed: boolean;
+  known_exploited: boolean;
+  logging_enabled: boolean;
+  control_effectiveness: number;
+  risk_appetite: string;
+  likelihood: number;
+  impact: number;
+  inherent_score: number;
+  inherent_rating: string;
+  residual_score: number;
+  residual_rating: string;
+  contributing_factors: RiskFactorEntry[];
+  primary_concern: string;
+  recommended_treatment: string;
+  treatment_decision: string | null;
+  treatment_reason: string;
+  owner: string;
+  target_date: string | null;
+  status: string;
+}
+
 export interface Asset {
   id: number;
   asset_tag: string;

@@ -1,0 +1,14 @@
+"""API v1 router aggregation.
+
+Each domain module owns one router file here and is mounted in
+app/main.py. Keeping this file as the single place that lists every
+mounted domain router makes it easy to see the full API surface at a
+glance rather than hunting through main.py.
+"""
+from fastapi import APIRouter
+
+from app.api.v1 import auth, health
+
+api_router = APIRouter()
+api_router.include_router(health.router, tags=["health"])
+api_router.include_router(auth.router, tags=["auth"])

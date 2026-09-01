@@ -1,0 +1,26 @@
+[tool.pytest.ini_options]
+pythonpath = ["."]
+testpaths = ["tests"]
+
+[tool.ruff]
+line-length = 110
+target-version = "py312"
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "B", "S"]
+ignore = ["S101"]  # allow assert in tests
+
+[tool.ruff.lint.per-file-ignores]
+# Test env vars must be set before importing app modules (E402); test
+# fixtures use obviously-fake literal credentials, not real secrets (S106).
+"tests/*" = ["E402", "S106"]
+"scripts/*" = ["S106"]  # seed script's documented local-demo default password
+"alembic/env.py" = ["E402", "I001"]  # sys.path must be set before importing app modules
+
+[tool.ruff.lint.flake8-bugbear]
+# FastAPI's dependency-injection pattern (`param: T = Depends(...)`) is
+# idiomatic, not the "mutable default argument" bug B008 exists to catch.
+extend-immutable-calls = ["fastapi.Depends", "fastapi.params.Depends"]
+
+[tool.bandit]
+exclude_dirs = ["tests", "alembic"]

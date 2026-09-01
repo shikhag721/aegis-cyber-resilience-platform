@@ -1,0 +1,27 @@
+"""Database engine/session management.
+
+DATABASE_URL determines the backend: Postgres in Docker/CI, or a local
+SQLite file as a zero-infrastructure fallback for quick local iteration
+(see docs/decisions/0002-database-postgresql.md for the trade-off).
+"""
+from collections.abc import Generator
+
+from sqlalchemy import create_engine
+from sqlalchemy.orm import Session, sessionmaker
+
+from app.core.config import get_settings
+
+settings = get_settings()
+
+_connect_args = {"check_same_thread": False} if settings.database_url.startswith("sqlite") else {}
+
+engine = create_engine(settings.database_url, connect_args=_connect_args)
+SessionLocal = sessionmaker(bind=engine, autocommit=False, autoflush=False)
+
+
+def get_db() -> Generator[Session, None, None]:
+    db = SessionLocal()
+    try:
+        yield db
+    finally:
+        db.close()

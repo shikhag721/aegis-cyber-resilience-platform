@@ -13,7 +13,9 @@ from app.api.v1 import (
     audit,
     auth,
     cloud,
+    continuity,
     controls,
+    data_security,
     evidence,
     health,
     iam,
@@ -21,6 +23,7 @@ from app.api.v1 import (
     monitoring,
     risk,
     threat_modeling,
+    vendors,
     vulnerabilities,
 )
 
@@ -39,3 +42,6 @@ api_router.include_router(incidents.router)
 api_router.include_router(controls.router)
 api_router.include_router(evidence.router)
 api_router.include_router(audit.router)
+api_router.include_router(vendors.router)
+api_router.include_router(data_security.router)
+api_router.include_router(continuity.router)

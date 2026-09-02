@@ -199,4 +199,25 @@ Phase-by-phase log, per `docs/decisions/0000-project-phasing.md`.
 - Frontend Control Assessment, Evidence Register, and Audit Log pages.
 - 23 new backend tests (157 total).
 
+## Phase 9 — Third-party/vendor risk, data security, business continuity
+- `Vendor`/`VendorAssessment` with its own deterministic, explainable
+  scorer (ADR 0008: NOT a forced reuse of `app/risk_engine/` - vendor
+  factors like subprocessors, certifications, and contract terms don't
+  map cleanly onto asset-based likelihood/impact, so this follows the same
+  design pattern with domain-appropriate inputs instead).
+- `DataAsset` catalog (Section 21): where specific sensitive data
+  categories (PII, financial, credentials, secrets, business, AI data)
+  actually live, independent of an asset's general classification tier -
+  one asset can hold several categories with different exposure profiles.
+- `ContinuityPlan` (Section 22): RTO/RPO, backup/DR test currency,
+  recovery dependencies, with staleness thresholds scaled to asset
+  criticality.
+- Northstar seed data: 3 vendors (one well-governed, one poorly-governed
+  with real incident history, one strong-baseline), 5 data assets, 4
+  continuity plans - producing real findings (2 data-security, 6
+  continuity) on a fresh clone, not just clean data.
+- Frontend Vendors, Data Security, and Business Continuity pages.
+- 17 new backend tests (174 total); verified end to end via Docker
+  Compose with a full force-recreate.
+
 *(Subsequent phases appended here as completed.)*

@@ -43,17 +43,25 @@ from app.seed_data.northstar_threats import (
     NORTHSTAR_THREAT_ACTORS,
     NORTHSTAR_THREATS,
 )
+from app.seed_data.northstar_vendor_data_continuity import (
+    NORTHSTAR_CONTINUITY_PLANS,
+    NORTHSTAR_DATA_ASSETS,
+    NORTHSTAR_VENDORS,
+)
 from app.seed_data.northstar_vulnerabilities import NORTHSTAR_VULNERABILITIES
 from app.services import appsec as appsec_service
 from app.services import asset as asset_service
 from app.services import cloud as cloud_service
+from app.services import continuity as continuity_service
 from app.services import controls as controls_service
+from app.services import data_security as data_security_service
 from app.services import evidence as evidence_service
 from app.services import iam as iam_service
 from app.services import incident as incident_service
 from app.services import monitoring as monitoring_service
 from app.services import risk as risk_service
 from app.services import threat as threat_service
+from app.services import vendor as vendor_service
 from app.services import vulnerability as vuln_service
 from app.services.auth import create_user, get_user_by_username
 
@@ -314,6 +322,78 @@ def seed_controls(db) -> None:
     print(f"Created {len(NORTHSTAR_CONTROL_ASSESSMENTS)} control assessments with evidence.")
 
 
+def seed_vendors_data_continuity(db, tag_to_id: dict[str, int]) -> None:
+    if vendor_service.list_vendors(db):
+        print("Vendors already seeded - skipping.")
+    else:
+        for data in NORTHSTAR_VENDORS:
+            vendor = vendor_service.create_vendor(db, data)
+            vendor_service.run_assessment(db, vendor)
+        print(f"Created {len(NORTHSTAR_VENDORS)} vendors with risk assessments.")
+
+    if data_security_service.list_data_assets(db):
+        print("Data assets already seeded - skipping.")
+    else:
+        for (
+            asset_tag,
+            name,
+            category,
+            classification,
+            encrypted,
+            access_controlled,
+            retention_defined,
+            retention_period_days,
+            exposure_notes,
+        ) in NORTHSTAR_DATA_ASSETS:
+            data_security_service.create_data_asset(
+                db,
+                dict(
+                    name=name,
+                    category=category,
+                    classification=classification,
+                    asset_id=tag_to_id[asset_tag],
+                    encrypted=encrypted,
+                    access_controlled=access_controlled,
+                    retention_defined=retention_defined,
+                    retention_period_days=retention_period_days,
+                    exposure_notes=exposure_notes,
+                ),
+            )
+        print(f"Created {len(NORTHSTAR_DATA_ASSETS)} data assets.")
+
+    if continuity_service.list_plans(db):
+        print("Continuity plans already seeded - skipping.")
+    else:
+        for (
+            asset_tag,
+            rto_hours,
+            rpo_hours,
+            backup_frequency,
+            backup_tested_days_ago,
+            dr_test_days_ago,
+            dr_test_result,
+        ) in NORTHSTAR_CONTINUITY_PLANS:
+            continuity_service.create_plan(
+                db,
+                dict(
+                    asset_id=tag_to_id[asset_tag],
+                    rto_hours=rto_hours,
+                    rpo_hours=rpo_hours,
+                    backup_frequency=backup_frequency,
+                    last_backup_tested_at=(
+                        date.today() - timedelta(days=backup_tested_days_ago)
+                        if backup_tested_days_ago
+                        else None
+                    ),
+                    last_dr_test_at=(
+                        date.today() - timedelta(days=dr_test_days_ago) if dr_test_days_ago else None
+                    ),
+                    dr_test_result=dr_test_result,
+                ),
+            )
+        print(f"Created {len(NORTHSTAR_CONTINUITY_PLANS)} business continuity plans.")
+
+
 def main():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
@@ -327,6 +407,7 @@ def main():
         seed_app_security(db, tag_to_id)
         seed_monitoring_and_incidents(db)
         seed_controls(db)
+        seed_vendors_data_continuity(db, tag_to_id)
     finally:
         db.close()
 

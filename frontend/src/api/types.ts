@@ -259,6 +259,76 @@ export interface AuditLogEntry {
   occurred_at: string;
 }
 
+export interface Vendor {
+  id: number;
+  name: string;
+  service_description: string;
+  business_criticality: string;
+  data_access: boolean;
+  data_classification_handled: string;
+  security_controls_summary: string;
+  certifications: string;
+  has_incident_history: boolean;
+  incident_history_notes: string;
+  subprocessors: string;
+  availability_sla_percent: number | null;
+  contractual_security_clause: boolean;
+  data_retention_policy: string;
+  exit_strategy_defined: boolean;
+}
+
+export interface VendorAssessmentResult {
+  id: number;
+  vendor_id: number;
+  likelihood: number;
+  impact: number;
+  score: number;
+  rating: string;
+  contributing_factors: { name: string; axis: string; weight: number; reason: string }[];
+  recommendation: string;
+  assessed_at: string;
+}
+
+export interface DataAsset {
+  id: number;
+  name: string;
+  category: string;
+  classification: string;
+  asset_id: number;
+  encrypted: boolean;
+  access_controlled: boolean;
+  retention_defined: boolean;
+  retention_period_days: number | null;
+  exposure_notes: string;
+}
+
+export interface DataSecurityFinding {
+  data_asset_name: string;
+  finding_type: string;
+  severity: string;
+  detail: string;
+}
+
+export interface ContinuityPlan {
+  id: number;
+  asset_id: number;
+  rto_hours: number | null;
+  rpo_hours: number | null;
+  backup_frequency: string;
+  last_backup_tested_at: string | null;
+  last_dr_test_at: string | null;
+  dr_test_result: string;
+  recovery_dependencies: string[];
+  business_impact_if_unavailable: string;
+}
+
+export interface ContinuityFinding {
+  asset_name: string;
+  finding_type: string;
+  severity: string;
+  detail: string;
+}
+
 export interface Asset {
   id: number;
   asset_tag: string;

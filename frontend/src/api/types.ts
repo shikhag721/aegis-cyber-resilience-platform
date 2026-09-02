@@ -149,6 +149,29 @@ export interface CloudFinding {
   status: string;
 }
 
+export interface AppSecFinding {
+  id: number;
+  resource_name: string;
+  asset_id: number | null;
+  finding_type: string;
+  severity: string;
+  description: string;
+  owasp_reference: string;
+  recommendation: string;
+  status: string;
+}
+
+export interface SecretFinding {
+  id: number;
+  secret_type: string;
+  location: string;
+  severity: string;
+  exposure: string;
+  redacted_snippet: string;
+  rotation_recommendation: string;
+  status: string;
+}
+
 export interface Asset {
   id: number;
   asset_tag: string;

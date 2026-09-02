@@ -9,6 +9,7 @@ const NAV_ITEMS: { to: string; label: string }[] = [
   { to: "/risk-register", label: "Risk Register" },
   { to: "/iam", label: "IAM Risk" },
   { to: "/cloud", label: "Cloud Security" },
+  { to: "/app-security", label: "App Security & Secrets" },
   { to: "/incidents", label: "Incidents" },
   { to: "/controls", label: "Controls" },
   { to: "/evidence", label: "Evidence" },

@@ -115,4 +115,28 @@ Phase-by-phase log, per `docs/decisions/0000-project-phasing.md`.
 - 20 new backend tests (96 total); re-verified end to end via Docker
   Compose against real Postgres.
 
+## Phase 6 — Application/API security + secrets detection
+- Added `/app-security` route (ADR 0007) - not in the original nav list,
+  since neither Vulnerability Management (CVE-based) nor Cloud Security
+  (cloud config) was the right home for OWASP-style app findings or
+  leaked-credential findings.
+- `AppSecFinding` model: broken auth/authz, injection, insecure config,
+  sensitive data exposure, missing rate limiting, session security - each
+  with an OWASP reference.
+- A genuine, working regex-based secret scanner
+  (`app/services/secrets_scanner.py`, gitleaks/TruffleHog-style patterns:
+  AWS keys, Slack tokens, PEM private key headers, generic API
+  key/password assignments) - detection only, redacts every match in its
+  output, never stores or reproduces a real credential.
+- Seed data plants 5 OWASP-referenced app findings plus a synthetic
+  "leaked config" text that is run through the real scanner at seed time
+  (not hand-written records) - 3 of 4 planted fake secrets correctly
+  detected and persisted with redacted snippets.
+- Frontend page lets a user paste text and scan it live via the API.
+- 19 new backend tests (115 total). Caught and documented a real gotcha
+  during Docker verification: a Docker Desktop restart mid-build left
+  stale containers serving the previous phase's image despite `--build` -
+  fixed with `--no-cache` + `--force-recreate`, now documented in
+  `docs/testing/README.md` as a checked step.
+
 *(Subsequent phases appended here as completed.)*

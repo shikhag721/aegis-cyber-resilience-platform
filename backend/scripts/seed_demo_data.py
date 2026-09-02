@@ -17,6 +17,12 @@ from app.db.base import Base
 from app.db.session import SessionLocal, engine
 from app.models.risk import RiskStatus, TreatmentDecision
 from app.models.user import ROLE_ADMIN, ROLE_RISK_ANALYST, ROLE_VIEWER
+from app.seed_data.northstar_appsec import (
+    NORTHSTAR_APPSEC_FINDINGS,
+    SAMPLE_LEAKED_CONFIG_EXPOSURE,
+    SAMPLE_LEAKED_CONFIG_LOCATION,
+    SAMPLE_LEAKED_CONFIG_TEXT,
+)
 from app.seed_data.northstar_assets import NORTHSTAR_ASSET_DEPENDENCIES, NORTHSTAR_ASSETS
 from app.seed_data.northstar_iam_cloud import NORTHSTAR_CLOUD_FINDINGS, NORTHSTAR_IDENTITY_ACCOUNTS
 from app.seed_data.northstar_risks import NORTHSTAR_RISKS
@@ -26,6 +32,7 @@ from app.seed_data.northstar_threats import (
     NORTHSTAR_THREATS,
 )
 from app.seed_data.northstar_vulnerabilities import NORTHSTAR_VULNERABILITIES
+from app.services import appsec as appsec_service
 from app.services import asset as asset_service
 from app.services import cloud as cloud_service
 from app.services import iam as iam_service
@@ -215,6 +222,26 @@ def seed_iam_and_cloud(db, tag_to_id: dict[str, int]) -> None:
         print(f"Created {len(NORTHSTAR_CLOUD_FINDINGS)} cloud security findings.")
 
 
+def seed_app_security(db, tag_to_id: dict[str, int]) -> None:
+    if appsec_service.list_appsec_findings(db):
+        print("App security findings already seeded - skipping.")
+    else:
+        for item in NORTHSTAR_APPSEC_FINDINGS:
+            data = dict(item)
+            asset_tag = data.pop("asset_tag", None)
+            data["asset_id"] = tag_to_id.get(asset_tag) if asset_tag else None
+            appsec_service.create_appsec_finding(db, data)
+        print(f"Created {len(NORTHSTAR_APPSEC_FINDINGS)} app security findings.")
+
+    if appsec_service.list_secret_findings(db):
+        print("Secret findings already seeded - skipping.")
+    else:
+        found = appsec_service.scan_and_record(
+            db, SAMPLE_LEAKED_CONFIG_TEXT, SAMPLE_LEAKED_CONFIG_LOCATION, SAMPLE_LEAKED_CONFIG_EXPOSURE
+        )
+        print(f"Secret scan of sample leaked config found and recorded {len(found)} matches.")
+
+
 def main():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
@@ -225,6 +252,7 @@ def main():
         seed_risks(db, tag_to_id, threat_name_to_id)
         seed_vulnerabilities(db, tag_to_id)
         seed_iam_and_cloud(db, tag_to_id)
+        seed_app_security(db, tag_to_id)
     finally:
         db.close()
 

@@ -32,6 +32,21 @@ ruff check .
 bandit -r app -x tests
 ```
 
+## A caught gotcha: verifying against a stale Docker image
+
+While verifying Phase 6 end to end, `docker compose up -d` reused existing
+containers after a Docker Desktop restart interrupted a prior build,
+silently serving the *previous* phase's image (new endpoints 404'd even
+though the code was committed and unit-tested). The fix: after any Docker
+Desktop restart during active development, rebuild with `--no-cache` and
+recreate with `--force-recreate` rather than trusting `docker compose up
+-d --build` to detect staleness on its own - then re-verify with a direct
+`docker exec ... ls` check that the expected new file is actually present
+in the running container before treating the phase as verified. Recorded
+here because it's exactly the kind of gap that unit tests alone (all
+passing throughout) could not have caught - only an actual end-to-end run
+surfaced it.
+
 ## What "expected failure" tests look like here
 
 Every auth-sensitive feature has at least one test asserting the request

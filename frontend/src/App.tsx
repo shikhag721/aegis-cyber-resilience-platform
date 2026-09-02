@@ -10,6 +10,7 @@ import RiskRegister from "./pages/RiskRegister";
 import Vulnerabilities from "./pages/Vulnerabilities";
 import IAMRisk from "./pages/IAMRisk";
 import CloudSecurity from "./pages/CloudSecurity";
+import AppSecurity from "./pages/AppSecurity";
 import ModulePlaceholder from "./pages/ModulePlaceholder";
 
 function ProtectedRoutes() {
@@ -48,6 +49,7 @@ export default function App() {
           <Route path="/vulnerabilities" element={<Vulnerabilities />} />
           <Route path="/iam" element={<IAMRisk />} />
           <Route path="/cloud" element={<CloudSecurity />} />
+          <Route path="/app-security" element={<AppSecurity />} />
           {PLACEHOLDER_MODULES.map((m) => (
             <Route
               key={m.path}

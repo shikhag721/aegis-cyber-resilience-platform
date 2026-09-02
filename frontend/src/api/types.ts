@@ -201,6 +201,64 @@ export interface Incident {
   timeline: IncidentTimelineEntry[];
 }
 
+export interface Control {
+  id: number;
+  control_id: string;
+  title: string;
+  description: string;
+  control_objective: string;
+  framework_reference: string;
+  test_procedure: string;
+  owner: string;
+  review_frequency_days: number;
+}
+
+export interface EvidenceItem {
+  id: number;
+  control_assessment_id: number;
+  evidence_type: string;
+  source: string;
+  owner: string;
+  collected_at: string;
+  valid_until: string | null;
+  status: string;
+  notes: string;
+}
+
+export interface ControlAssessment {
+  id: number;
+  control_id: number;
+  asset_id: number | null;
+  design_effectiveness: string;
+  operating_effectiveness: string;
+  overall_status: string;
+  notes: string;
+  last_reviewed_at: string | null;
+  control: Control;
+  evidence: EvidenceItem[];
+}
+
+export interface ControlGapFinding {
+  control_id: string;
+  control_title: string;
+  assessment_id: number;
+  finding_type: string;
+  severity: string;
+  detail: string;
+}
+
+export interface AuditLogEntry {
+  id: number;
+  actor: string;
+  action: string;
+  object_type: string;
+  object_id: number;
+  old_value: Record<string, unknown>;
+  new_value: Record<string, unknown>;
+  reason: string;
+  occurred_at: string;
+}
+
 export interface Asset {
   id: number;
   asset_tag: string;

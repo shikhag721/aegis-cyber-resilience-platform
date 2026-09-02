@@ -6,6 +6,7 @@ from sqlalchemy.orm import Session
 from app.models.asset import Asset
 from app.models.risk import RiskRecord
 from app.risk_engine import RiskAppetite, RiskInput, assess
+from app.services import audit as audit_service
 
 
 def create_risk_record(db: Session, data: dict) -> RiskRecord:
@@ -75,9 +76,29 @@ def list_risk_records(
     return sorted(records, key=lambda r: r.residual_score, reverse=True)
 
 
-def update_treatment(db: Session, record: RiskRecord, changes: dict) -> RiskRecord:
+def update_treatment(db: Session, record: RiskRecord, changes: dict, actor: str = "system") -> RiskRecord:
+    old_status = record.status.value if hasattr(record.status, "value") else record.status
+
     for field, value in changes.items():
         setattr(record, field, value)
     db.commit()
     db.refresh(record)
+
+    new_status = record.status.value if hasattr(record.status, "value") else record.status
+    if old_status != new_status:
+        audit_service.record(
+            db,
+            actor=actor,
+            action="risk_treatment_update",
+            object_type="RiskRecord",
+            object_id=record.id,
+            old_value={"status": old_status},
+            new_value={
+                "status": new_status,
+                "treatment_decision": (
+                    record.treatment_decision.value if record.treatment_decision else None
+                ),
+            },
+            reason=record.treatment_reason,
+        )
     return record

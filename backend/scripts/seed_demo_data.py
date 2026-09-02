@@ -10,7 +10,7 @@ vars if you want different ones. See SECURITY.md.
 """
 import os
 import sys
-from datetime import timedelta
+from datetime import date, timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -25,6 +25,11 @@ from app.seed_data.northstar_appsec import (
     SAMPLE_LEAKED_CONFIG_TEXT,
 )
 from app.seed_data.northstar_assets import NORTHSTAR_ASSET_DEPENDENCIES, NORTHSTAR_ASSETS
+from app.seed_data.northstar_controls import (
+    NORTHSTAR_CONTROL_ASSESSMENTS,
+    NORTHSTAR_CONTROLS,
+    build_evidence_data,
+)
 from app.seed_data.northstar_iam_cloud import NORTHSTAR_CLOUD_FINDINGS, NORTHSTAR_IDENTITY_ACCOUNTS
 from app.seed_data.northstar_monitoring import (
     BASE_EVENT_TIME,
@@ -42,6 +47,8 @@ from app.seed_data.northstar_vulnerabilities import NORTHSTAR_VULNERABILITIES
 from app.services import appsec as appsec_service
 from app.services import asset as asset_service
 from app.services import cloud as cloud_service
+from app.services import controls as controls_service
+from app.services import evidence as evidence_service
 from app.services import iam as iam_service
 from app.services import incident as incident_service
 from app.services import monitoring as monitoring_service
@@ -280,6 +287,33 @@ def seed_monitoring_and_incidents(db) -> None:
         print("Created 1 seeded incident with a multi-stage timeline.")
 
 
+def seed_controls(db) -> None:
+    if controls_service.list_controls(db):
+        print("Controls already seeded - skipping.")
+        return
+
+    control_id_to_id = {}
+    for data in NORTHSTAR_CONTROLS:
+        control = controls_service.create_control(db, data)
+        control_id_to_id[control.control_id] = control.id
+    print(f"Created {len(NORTHSTAR_CONTROLS)} controls.")
+
+    for control_id, design, operating, notes, evidence_entries, days_ago in NORTHSTAR_CONTROL_ASSESSMENTS:
+        assessment = controls_service.create_assessment(
+            db,
+            dict(
+                control_id=control_id_to_id[control_id],
+                design_effectiveness=design,
+                operating_effectiveness=operating,
+                notes=notes,
+                last_reviewed_at=(date.today() - timedelta(days=days_ago)) if days_ago else None,
+            ),
+        )
+        for entry in evidence_entries or []:
+            evidence_service.create_evidence(db, assessment.id, build_evidence_data(entry))
+    print(f"Created {len(NORTHSTAR_CONTROL_ASSESSMENTS)} control assessments with evidence.")
+
+
 def main():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
@@ -292,6 +326,7 @@ def main():
         seed_iam_and_cloud(db, tag_to_id)
         seed_app_security(db, tag_to_id)
         seed_monitoring_and_incidents(db)
+        seed_controls(db)
     finally:
         db.close()
 

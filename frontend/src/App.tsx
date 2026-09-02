@@ -12,6 +12,9 @@ import IAMRisk from "./pages/IAMRisk";
 import CloudSecurity from "./pages/CloudSecurity";
 import AppSecurity from "./pages/AppSecurity";
 import Incidents from "./pages/Incidents";
+import Controls from "./pages/Controls";
+import Evidence from "./pages/Evidence";
+import AuditLog from "./pages/AuditLog";
 import ModulePlaceholder from "./pages/ModulePlaceholder";
 
 function ProtectedRoutes() {
@@ -21,8 +24,6 @@ function ProtectedRoutes() {
 }
 
 const PLACEHOLDER_MODULES: { path: string; title: string; phase: string }[] = [
-  { path: "controls", title: "Control Assessment", phase: "Phase 8" },
-  { path: "evidence", title: "Evidence Management", phase: "Phase 8" },
   { path: "vendors", title: "Third-Party / Vendor Risk", phase: "Phase 9" },
   { path: "data-security", title: "Data Security", phase: "Phase 9" },
   { path: "business-continuity", title: "Business Continuity & DR", phase: "Phase 9" },
@@ -31,7 +32,6 @@ const PLACEHOLDER_MODULES: { path: string; title: string; phase: string }[] = [
   { path: "rag-security", title: "RAG Security", phase: "Phase 11" },
   { path: "agent-security", title: "AI Agent Security", phase: "Phase 11" },
   { path: "reports", title: "Reports", phase: "Phase 13" },
-  { path: "audit-log", title: "Audit Log", phase: "Phase 8" },
   { path: "settings", title: "Settings", phase: "Phase 1" },
 ];
 
@@ -51,6 +51,9 @@ export default function App() {
           <Route path="/cloud" element={<CloudSecurity />} />
           <Route path="/app-security" element={<AppSecurity />} />
           <Route path="/incidents" element={<Incidents />} />
+          <Route path="/controls" element={<Controls />} />
+          <Route path="/evidence" element={<Evidence />} />
+          <Route path="/audit-log" element={<AuditLog />} />
           {PLACEHOLDER_MODULES.map((m) => (
             <Route
               key={m.path}

@@ -45,9 +45,9 @@ def get_risk_record(risk_id: int, db: Session = Depends(get_db), _user=require_r
 
 @router.patch("/{risk_id}/treatment", response_model=RiskRecordRead)
 def update_treatment(
-    risk_id: int, payload: RiskTreatmentUpdate, db: Session = Depends(get_db), _user=require_write
+    risk_id: int, payload: RiskTreatmentUpdate, db: Session = Depends(get_db), current_user=require_write
 ):
     record = risk_service.get_risk_record(db, risk_id)
     if not record:
         raise HTTPException(status_code=404, detail="Risk record not found")
-    return risk_service.update_treatment(db, record, payload.model_dump())
+    return risk_service.update_treatment(db, record, payload.model_dump(), actor=current_user.username)

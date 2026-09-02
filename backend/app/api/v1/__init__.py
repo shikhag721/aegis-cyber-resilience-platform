@@ -10,8 +10,11 @@ from fastapi import APIRouter
 from app.api.v1 import (
     app_security,
     assets,
+    audit,
     auth,
     cloud,
+    controls,
+    evidence,
     health,
     iam,
     incidents,
@@ -33,3 +36,6 @@ api_router.include_router(cloud.router)
 api_router.include_router(app_security.router)
 api_router.include_router(monitoring.router)
 api_router.include_router(incidents.router)
+api_router.include_router(controls.router)
+api_router.include_router(evidence.router)
+api_router.include_router(audit.router)

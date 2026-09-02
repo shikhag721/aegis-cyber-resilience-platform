@@ -2,6 +2,7 @@
 from sqlalchemy.orm import Session, joinedload
 
 from app.models.incident import STAGE_ORDER, Incident, IncidentStage, IncidentTimelineEntry
+from app.services import audit as audit_service
 
 
 def create_incident(db: Session, data: dict) -> Incident:
@@ -38,7 +39,7 @@ def add_timeline_entry(
     return entry
 
 
-def advance_stage(db: Session, incident: Incident, description: str) -> Incident:
+def advance_stage(db: Session, incident: Incident, description: str, actor: str = "system") -> Incident:
     """Moves the incident to the NEXT stage in STAGE_ORDER only - lifecycle
     stages cannot be skipped or reordered, matching how a real IR process
     requires each phase to actually be worked, not just labeled.
@@ -47,11 +48,22 @@ def advance_stage(db: Session, incident: Incident, description: str) -> Incident
     if current_index >= len(STAGE_ORDER) - 1:
         raise ValueError(f"Incident is already at its final stage ({incident.stage.value}).")
 
+    old_stage = incident.stage
     next_stage = STAGE_ORDER[current_index + 1]
     incident.stage = next_stage
     db.commit()
     db.refresh(incident)
     add_timeline_entry(db, incident, next_stage, description)
+    audit_service.record(
+        db,
+        actor=actor,
+        action="incident_stage_advance",
+        object_type="Incident",
+        object_id=incident.id,
+        old_value={"stage": old_stage.value},
+        new_value={"stage": next_stage.value},
+        reason=description,
+    )
     return incident
 
 

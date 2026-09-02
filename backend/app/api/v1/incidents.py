@@ -42,13 +42,16 @@ def get_incident(incident_id: int, db: Session = Depends(get_db), _user=require_
 
 @router.post("/{incident_id}/advance", response_model=IncidentRead)
 def advance_incident(
-    incident_id: int, payload: IncidentAdvanceRequest, db: Session = Depends(get_db), _user=require_write
+    incident_id: int,
+    payload: IncidentAdvanceRequest,
+    db: Session = Depends(get_db),
+    current_user=require_write,
 ):
     incident = incident_service.get_incident(db, incident_id)
     if not incident:
         raise HTTPException(status_code=404, detail="Incident not found")
     try:
-        incident_service.advance_stage(db, incident, payload.description)
+        incident_service.advance_stage(db, incident, payload.description, actor=current_user.username)
     except ValueError as exc:
         raise HTTPException(status_code=422, detail=str(exc)) from exc
     return incident_service.get_incident(db, incident_id)

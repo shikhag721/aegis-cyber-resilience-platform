@@ -171,4 +171,32 @@ Phase-by-phase log, per `docs/decisions/0000-project-phasing.md`.
   Compose with a full `--force-recreate` across all three services this
   time, confirming the stale-image lesson from Phase 6 stuck.
 
+## Phase 8 — GRC controls, evidence, and audit log
+- `Control`/`ControlAssessment` model separating **design effectiveness**
+  from **operating effectiveness** - a control assessed as well-designed
+  but not operating (or vice versa) surfaces as "Partially Effective," not
+  silently rounded to either extreme. `overall_status` is the conservative
+  combination of both, never a restatement of one.
+- `Evidence` model tied to a control assessment, with expiry tracking
+  (`refresh_expired_status` flips past-due evidence from Valid to Expired
+  automatically).
+- `analyze_control_gaps`: flags ineffective/partially-effective/
+  not-assessed controls, missing evidence, expired evidence, and overdue
+  reviews - deterministic, computed, not stored.
+- Append-only-style `AuditLogEntry` (Section 32) with a single `record()`
+  entry point, retrofitted into the three most GRC-relevant state changes
+  already built: control effectiveness updates, risk treatment updates,
+  and incident stage advances - each logs actor, old value, new value, and
+  reason only when the status actually changes.
+- Northstar seed data plants a realistic spread: one Ineffective control
+  (tied narratively to the already-seeded Log4Shell risk-acceptance), one
+  Partially Effective, one Not Assessed, one with expired evidence, one
+  overdue for review.
+- Verified on a **fully fresh Docker volume** (not just an incrementally
+  reused one) that the seed process itself populates 5 real audit entries
+  out of the box - confirming the audit trail isn't only visible after
+  manual interaction.
+- Frontend Control Assessment, Evidence Register, and Audit Log pages.
+- 23 new backend tests (157 total).
+
 *(Subsequent phases appended here as completed.)*

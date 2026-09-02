@@ -8,6 +8,7 @@ glance rather than hunting through main.py.
 from fastapi import APIRouter
 
 from app.api.v1 import (
+    agent_security,
     ai_inventory,
     ai_security,
     app_security,
@@ -23,6 +24,7 @@ from app.api.v1 import (
     iam,
     incidents,
     monitoring,
+    rag_security,
     risk,
     threat_modeling,
     vendors,
@@ -49,3 +51,5 @@ api_router.include_router(data_security.router)
 api_router.include_router(continuity.router)
 api_router.include_router(ai_inventory.router)
 api_router.include_router(ai_security.router)
+api_router.include_router(rag_security.router)
+api_router.include_router(agent_security.router)

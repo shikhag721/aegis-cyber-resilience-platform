@@ -38,6 +38,7 @@ from app.seed_data.northstar_monitoring import (
     NORTHSTAR_INCIDENT_PROGRESS,
     NORTHSTAR_SECURITY_EVENTS,
 )
+from app.seed_data.northstar_rag_agent import NORTHSTAR_AI_AGENTS, NORTHSTAR_RAG_PIPELINES
 from app.seed_data.northstar_risks import NORTHSTAR_RISKS
 from app.seed_data.northstar_threats import (
     NORTHSTAR_ATTACK_PATHS,
@@ -50,6 +51,7 @@ from app.seed_data.northstar_vendor_data_continuity import (
     NORTHSTAR_VENDORS,
 )
 from app.seed_data.northstar_vulnerabilities import NORTHSTAR_VULNERABILITIES
+from app.services import agent as agent_service
 from app.services import ai as ai_service
 from app.services import appsec as appsec_service
 from app.services import asset as asset_service
@@ -61,6 +63,7 @@ from app.services import evidence as evidence_service
 from app.services import iam as iam_service
 from app.services import incident as incident_service
 from app.services import monitoring as monitoring_service
+from app.services import rag as rag_service
 from app.services import risk as risk_service
 from app.services import threat as threat_service
 from app.services import vendor as vendor_service
@@ -432,6 +435,32 @@ def seed_ai(db, tag_to_id: dict[str, int]) -> None:
     print(f"Created {len(NORTHSTAR_AI_SECURITY_FINDINGS)} AI security findings.")
 
 
+def seed_rag_and_agents(db) -> None:
+    if rag_service.list_rag_pipelines(db):
+        print("RAG pipelines already seeded - skipping.")
+    else:
+        ai_name_to_id = {s.name: s.id for s in ai_service.list_ai_systems(db)}
+        for item in NORTHSTAR_RAG_PIPELINES:
+            data = dict(item)
+            ai_system_name = data.pop("ai_system_name", None)
+            data["ai_system_id"] = ai_name_to_id.get(ai_system_name) if ai_system_name else None
+            rag_service.create_rag_pipeline(db, data)
+        print(f"Created {len(NORTHSTAR_RAG_PIPELINES)} RAG pipelines.")
+
+    if agent_service.list_agents(db):
+        print("AI agents already seeded - skipping.")
+        return
+
+    ai_name_to_id = {s.name: s.id for s in ai_service.list_ai_systems(db)}
+    for item in NORTHSTAR_AI_AGENTS:
+        data = dict(item)
+        ai_system_name = data.pop("ai_system_name", None)
+        data["ai_system_id"] = ai_name_to_id.get(ai_system_name) if ai_system_name else None
+        agent = agent_service.create_agent(db, data)
+        agent_service.run_assessment(db, agent)
+    print(f"Created {len(NORTHSTAR_AI_AGENTS)} AI agents with initial blast-radius assessments.")
+
+
 def main():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
@@ -447,6 +476,7 @@ def main():
         seed_controls(db)
         seed_vendors_data_continuity(db, tag_to_id)
         seed_ai(db, tag_to_id)
+        seed_rag_and_agents(db)
     finally:
         db.close()
 

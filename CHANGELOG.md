@@ -255,4 +255,36 @@ Phase-by-phase log, per `docs/decisions/0000-project-phasing.md`.
   to end via Docker Compose with a full force-recreate, including a
   mid-verification Docker Desktop daemon drop and recovery.
 
+## Phase 11 — RAG security + AI-agent security
+- `RAGPipeline` model (Section 26) and a deterministic root-cause
+  classifier (`analyze_rag_pipeline`): the same visible symptom - a RAG
+  assistant surfacing information it shouldn't - is classified as either
+  broken authorization (missing per-document access control) or prompt
+  injection (unsanitized retrieved content), plus data poisoning
+  (untrusted, unvalidated sources) and insecure output handling
+  (unvalidated downstream output). Root cause, not just severity, drives
+  the fix.
+- `AIAgent`/`AgentAssessment` models (Section 27) and a blast-radius
+  scorer (`assess_agent`, ADR 0009: its own parallel scorer, following the
+  vendor-risk precedent from ADR 0008) - likelihood from autonomy level,
+  human-approval requirement, and documented guardrails; impact from
+  irreversibility, financial-transaction capability, and breadth of tool
+  access.
+- Northstar seed data continues the Phase 10 narrative: the "Internal RAG
+  Knowledge Assistant" pipeline reproduces the exact access-control gap
+  already flagged in Phase 10 (now classified as broken_authorization);
+  a new "Public FAQ RAG Assistant" pilot ingesting untrusted public/forum
+  content trips all three remaining root causes; a well-governed
+  "Customer Support Draft Agent" scores Low, while the "Trading Signal
+  Execution Agent" - the execution-layer counterpart of Phase 10's
+  deliberately under-governed trading assistant - scores Critical
+  (score 20) and is recommended to halt pending governance review.
+- Frontend RAG Security (root-cause findings + pipeline catalog) and AI
+  Agent Security (expandable cards with contributing factors, matching
+  the Vendor Risk page pattern) pages, replacing their Phase-0
+  placeholders.
+- 23 new backend tests (211 total); ruff and Bandit clean; verified end
+  to end via Docker Compose with a full force-recreate against real
+  Postgres, through both the backend and frontend proxy.
+
 *(Subsequent phases appended here as completed.)*

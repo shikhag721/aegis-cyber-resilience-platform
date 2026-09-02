@@ -369,6 +369,52 @@ export interface AIInventoryFinding {
   detail: string;
 }
 
+export interface RAGPipeline {
+  id: number;
+  name: string;
+  ai_system_id: number | null;
+  data_sources: string[];
+  document_level_access_control: boolean;
+  retrieved_content_sanitized: boolean;
+  allows_untrusted_data_sources: boolean;
+  source_content_validated: boolean;
+  output_validated_before_use: boolean;
+  notes: string;
+}
+
+export interface RAGFinding {
+  pipeline_name: string;
+  root_cause: string;
+  severity: string;
+  detail: string;
+}
+
+export interface AgentAssessment {
+  id: number;
+  agent_id: number;
+  likelihood: number;
+  impact: number;
+  score: number;
+  rating: string;
+  contributing_factors: { name: string; axis: string; weight: number; reason: string }[];
+  recommendation: string;
+  assessed_at: string;
+}
+
+export interface AIAgent {
+  id: number;
+  name: string;
+  ai_system_id: number | null;
+  purpose: string;
+  tools_available: string[];
+  autonomy_level: string;
+  can_take_irreversible_actions: boolean;
+  can_initiate_financial_transactions: boolean;
+  requires_human_approval: boolean;
+  data_access_scope: string;
+  guardrails_description: string;
+}
+
 export interface Asset {
   id: number;
   asset_tag: string;

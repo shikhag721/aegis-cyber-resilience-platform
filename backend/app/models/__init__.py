@@ -1,6 +1,7 @@
 """Import every model module here so Base.metadata (and Alembic
 autogenerate) can discover all tables from a single import.
 """
+from app.models.agent import AgentAssessment, AIAgent  # noqa: F401
 from app.models.ai import AISecurityFinding, AISystem  # noqa: F401
 from app.models.appsec import AppSecFinding, SecretFinding  # noqa: F401
 from app.models.asset import Asset, AssetDependency  # noqa: F401
@@ -12,6 +13,7 @@ from app.models.data_security import DataAsset  # noqa: F401
 from app.models.identity import IdentityAccount  # noqa: F401
 from app.models.incident import Incident, IncidentTimelineEntry  # noqa: F401
 from app.models.monitoring import SecurityEvent  # noqa: F401
+from app.models.rag import RAGPipeline  # noqa: F401
 from app.models.risk import RiskRecord  # noqa: F401
 from app.models.threat import AttackPath, AttackPathStep, Threat, ThreatActor  # noqa: F401
 from app.models.user import User  # noqa: F401

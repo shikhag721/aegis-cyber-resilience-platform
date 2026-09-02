@@ -18,6 +18,7 @@ from app.db.base import Base
 from app.db.session import SessionLocal, engine
 from app.models.risk import RiskStatus, TreatmentDecision
 from app.models.user import ROLE_ADMIN, ROLE_RISK_ANALYST, ROLE_VIEWER
+from app.seed_data.northstar_ai import NORTHSTAR_AI_SECURITY_FINDINGS, NORTHSTAR_AI_SYSTEMS
 from app.seed_data.northstar_appsec import (
     NORTHSTAR_APPSEC_FINDINGS,
     SAMPLE_LEAKED_CONFIG_EXPOSURE,
@@ -49,6 +50,7 @@ from app.seed_data.northstar_vendor_data_continuity import (
     NORTHSTAR_VENDORS,
 )
 from app.seed_data.northstar_vulnerabilities import NORTHSTAR_VULNERABILITIES
+from app.services import ai as ai_service
 from app.services import appsec as appsec_service
 from app.services import asset as asset_service
 from app.services import cloud as cloud_service
@@ -394,6 +396,42 @@ def seed_vendors_data_continuity(db, tag_to_id: dict[str, int]) -> None:
         print(f"Created {len(NORTHSTAR_CONTINUITY_PLANS)} business continuity plans.")
 
 
+def seed_ai(db, tag_to_id: dict[str, int]) -> None:
+    if ai_service.list_ai_systems(db):
+        print("AI systems already seeded - skipping.")
+        return
+
+    name_to_id = {}
+    for item in NORTHSTAR_AI_SYSTEMS:
+        data = dict(item)
+        asset_tag = data.pop("asset_tag", None)
+        data["asset_id"] = tag_to_id.get(asset_tag) if asset_tag else None
+        ai_system = ai_service.create_ai_system(db, data)
+        name_to_id[ai_system.name] = ai_system.id
+    print(f"Created {len(NORTHSTAR_AI_SYSTEMS)} AI systems.")
+
+    for (
+        name,
+        risk_lens,
+        finding_type,
+        severity,
+        description,
+        recommendation,
+    ) in NORTHSTAR_AI_SECURITY_FINDINGS:
+        ai_service.create_finding(
+            db,
+            name_to_id[name],
+            dict(
+                risk_lens=risk_lens,
+                finding_type=finding_type,
+                severity=severity,
+                description=description,
+                recommendation=recommendation,
+            ),
+        )
+    print(f"Created {len(NORTHSTAR_AI_SECURITY_FINDINGS)} AI security findings.")
+
+
 def main():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
@@ -408,6 +446,7 @@ def main():
         seed_monitoring_and_incidents(db)
         seed_controls(db)
         seed_vendors_data_continuity(db, tag_to_id)
+        seed_ai(db, tag_to_id)
     finally:
         db.close()
 

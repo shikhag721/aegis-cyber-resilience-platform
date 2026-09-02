@@ -329,6 +329,46 @@ export interface ContinuityFinding {
   detail: string;
 }
 
+export interface AISecurityFinding {
+  id: number;
+  ai_system_id: number;
+  risk_lens: string;
+  finding_type: string;
+  severity: string;
+  description: string;
+  recommendation: string;
+  status: string;
+  discovered_at: string;
+}
+
+export interface AISystem {
+  id: number;
+  name: string;
+  business_owner: string;
+  technical_owner: string;
+  purpose: string;
+  model_provider: string;
+  data_processed: string;
+  user_base: string;
+  integrations: string[];
+  tools_available: string[];
+  permissions_summary: string;
+  deployment_environment: string;
+  human_oversight: boolean;
+  monitoring_enabled: boolean;
+  influences_decisions: boolean;
+  regulatory_risk_tier: string;
+  asset_id: number | null;
+  findings: AISecurityFinding[];
+}
+
+export interface AIInventoryFinding {
+  ai_system_name: string;
+  finding_type: string;
+  severity: string;
+  detail: string;
+}
+
 export interface Asset {
   id: number;
   asset_tag: string;

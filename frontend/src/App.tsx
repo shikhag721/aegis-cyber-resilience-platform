@@ -18,6 +18,8 @@ import AuditLog from "./pages/AuditLog";
 import Vendors from "./pages/Vendors";
 import DataSecurity from "./pages/DataSecurity";
 import BusinessContinuity from "./pages/BusinessContinuity";
+import AIInventory from "./pages/AIInventory";
+import AISecurity from "./pages/AISecurity";
 import ModulePlaceholder from "./pages/ModulePlaceholder";
 
 function ProtectedRoutes() {
@@ -27,8 +29,6 @@ function ProtectedRoutes() {
 }
 
 const PLACEHOLDER_MODULES: { path: string; title: string; phase: string }[] = [
-  { path: "ai-inventory", title: "AI Inventory", phase: "Phase 10" },
-  { path: "ai-security", title: "AI Security", phase: "Phase 10" },
   { path: "rag-security", title: "RAG Security", phase: "Phase 11" },
   { path: "agent-security", title: "AI Agent Security", phase: "Phase 11" },
   { path: "reports", title: "Reports", phase: "Phase 13" },
@@ -57,6 +57,8 @@ export default function App() {
           <Route path="/vendors" element={<Vendors />} />
           <Route path="/data-security" element={<DataSecurity />} />
           <Route path="/business-continuity" element={<BusinessContinuity />} />
+          <Route path="/ai-inventory" element={<AIInventory />} />
+          <Route path="/ai-security" element={<AISecurity />} />
           {PLACEHOLDER_MODULES.map((m) => (
             <Route
               key={m.path}

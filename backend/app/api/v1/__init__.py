@@ -8,6 +8,8 @@ glance rather than hunting through main.py.
 from fastapi import APIRouter
 
 from app.api.v1 import (
+    ai_inventory,
+    ai_security,
     app_security,
     assets,
     audit,
@@ -45,3 +47,5 @@ api_router.include_router(audit.router)
 api_router.include_router(vendors.router)
 api_router.include_router(data_security.router)
 api_router.include_router(continuity.router)
+api_router.include_router(ai_inventory.router)
+api_router.include_router(ai_security.router)

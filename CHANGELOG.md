@@ -220,4 +220,39 @@ Phase-by-phase log, per `docs/decisions/0000-project-phasing.md`.
 - 17 new backend tests (174 total); verified end to end via Docker
   Compose with a full force-recreate.
 
+## Phase 10 — AI inventory + AI security
+- `AISystem` model (Section 24): business/technical owner, model provider,
+  data processed, integrations, tools available, deployment environment,
+  and three governance flags - human oversight, monitoring enabled,
+  influences decisions - plus an illustrative (non-binding)
+  `RegulatoryRiskTier`.
+- `AISecurityFinding` model attributed to one of the 8 `AIRiskLens` values
+  from Section 25 (model, application, data, identity, infrastructure,
+  tool, third-party, governance) and one of 10 finding types (prompt
+  injection, sensitive info disclosure, excessive agency, improper
+  authorization, etc.).
+- Deterministic governance gap analysis (`analyze_ai_inventory`, same
+  computed-not-stored pattern as IAM/controls/data-security/continuity):
+  flags tool access without human oversight (excessive agency, critical),
+  decisions influenced without review (critical), no monitoring (medium),
+  and high regulatory-tier third-party models without oversight (high).
+- Northstar seed data: 3 AI systems - the two already referenced in the
+  Phase 1 asset inventory (AST-009 Customer Support Assistant, AST-010
+  Internal RAG Knowledge Assistant, both reasonably governed) plus a third,
+  deliberately under-governed "Experimental AI Trading Signal Assistant"
+  (no asset record, no oversight, no monitoring, influences trade
+  decisions, high regulatory tier, third-party model) that trips all four
+  gap-analysis rules on a fresh clone - plus 3 analyst-identified AI
+  security findings across the risk lenses.
+- Fixed a Pydantic v2 warning: `model_provider` collides with the
+  reserved `model_` namespace prefix - resolved via
+  `ConfigDict(protected_namespaces=())` rather than renaming a
+  domain-natural field.
+- Frontend AI Inventory (governance flags per system) and AI Security
+  (analyst findings + live gap analysis) pages, replacing their Phase-0
+  placeholders.
+- 15 new backend tests (188 total); ruff and Bandit clean; verified end
+  to end via Docker Compose with a full force-recreate, including a
+  mid-verification Docker Desktop daemon drop and recovery.
+
 *(Subsequent phases appended here as completed.)*

@@ -138,5 +138,14 @@ Phase-by-phase log, per `docs/decisions/0000-project-phasing.md`.
   stale containers serving the previous phase's image despite `--build` -
   fixed with `--no-cache` + `--force-recreate`, now documented in
   `docs/testing/README.md` as a checked step.
+- A genuine DevSecOps moment: GitHub's own push protection blocked the
+  first push of this phase, having detected that two of *this project's
+  own* synthetic test fixtures were shaped closely enough like real Slack/
+  Stripe token formats to match its live secret-scanning rules. Fixed by
+  reshaping the fake values to be unambiguously non-real while still
+  exercising the same detection code paths - a real external confirmation
+  that credential-format detection (the same category of thing this
+  phase's own scanner does) works as intended, caught before merge, not
+  after.
 
 *(Subsequent phases appended here as completed.)*

@@ -148,4 +148,27 @@ Phase-by-phase log, per `docs/decisions/0000-project-phasing.md`.
   phase's own scanner does) works as intended, caught before merge, not
   after.
 
+## Phase 7 — Security monitoring + incident response
+- `SecurityEvent` model and a correlation engine
+  (`app/services/monitoring.py::correlate`) that flags a *sequence* of
+  events per account (failed login(s) → successful login → unusual
+  location/privilege escalation → database access/unusual data transfer)
+  within a 24-hour window as a single, explainable finding - a single
+  isolated event never triggers a finding on its own, matching how real
+  detection-engineering correlation rules work.
+- `Incident` model with an enforced, forward-only lifecycle (Detection →
+  Triage → Investigation → Containment → Eradication → Recovery → Lessons
+  Learned) - stages cannot be skipped, and every transition requires a
+  substantive timeline note (validator-enforced).
+- Seed data plants the exact compromise chain for `a.singh` (the same
+  account already flagged in Phase 5 for missing MFA on a privileged
+  account), correctly detected as a Critical correlation finding, and a
+  linked incident progressed through 4 lifecycle stages with a full
+  timeline.
+- Frontend page shows correlated findings and incidents with an
+  "Advance Stage" workflow.
+- 19 new backend tests (134 total); verified end to end via Docker
+  Compose with a full `--force-recreate` across all three services this
+  time, confirming the stale-image lesson from Phase 6 stuck.
+
 *(Subsequent phases appended here as completed.)*

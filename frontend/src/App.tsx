@@ -11,6 +11,7 @@ import Vulnerabilities from "./pages/Vulnerabilities";
 import IAMRisk from "./pages/IAMRisk";
 import CloudSecurity from "./pages/CloudSecurity";
 import AppSecurity from "./pages/AppSecurity";
+import Incidents from "./pages/Incidents";
 import ModulePlaceholder from "./pages/ModulePlaceholder";
 
 function ProtectedRoutes() {
@@ -20,7 +21,6 @@ function ProtectedRoutes() {
 }
 
 const PLACEHOLDER_MODULES: { path: string; title: string; phase: string }[] = [
-  { path: "incidents", title: "Incident Response", phase: "Phase 7" },
   { path: "controls", title: "Control Assessment", phase: "Phase 8" },
   { path: "evidence", title: "Evidence Management", phase: "Phase 8" },
   { path: "vendors", title: "Third-Party / Vendor Risk", phase: "Phase 9" },
@@ -50,6 +50,7 @@ export default function App() {
           <Route path="/iam" element={<IAMRisk />} />
           <Route path="/cloud" element={<CloudSecurity />} />
           <Route path="/app-security" element={<AppSecurity />} />
+          <Route path="/incidents" element={<Incidents />} />
           {PLACEHOLDER_MODULES.map((m) => (
             <Route
               key={m.path}

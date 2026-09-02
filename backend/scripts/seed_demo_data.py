@@ -10,6 +10,7 @@ vars if you want different ones. See SECURITY.md.
 """
 import os
 import sys
+from datetime import timedelta
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
@@ -25,6 +26,12 @@ from app.seed_data.northstar_appsec import (
 )
 from app.seed_data.northstar_assets import NORTHSTAR_ASSET_DEPENDENCIES, NORTHSTAR_ASSETS
 from app.seed_data.northstar_iam_cloud import NORTHSTAR_CLOUD_FINDINGS, NORTHSTAR_IDENTITY_ACCOUNTS
+from app.seed_data.northstar_monitoring import (
+    BASE_EVENT_TIME,
+    NORTHSTAR_INCIDENT,
+    NORTHSTAR_INCIDENT_PROGRESS,
+    NORTHSTAR_SECURITY_EVENTS,
+)
 from app.seed_data.northstar_risks import NORTHSTAR_RISKS
 from app.seed_data.northstar_threats import (
     NORTHSTAR_ATTACK_PATHS,
@@ -36,6 +43,8 @@ from app.services import appsec as appsec_service
 from app.services import asset as asset_service
 from app.services import cloud as cloud_service
 from app.services import iam as iam_service
+from app.services import incident as incident_service
+from app.services import monitoring as monitoring_service
 from app.services import risk as risk_service
 from app.services import threat as threat_service
 from app.services import vulnerability as vuln_service
@@ -242,6 +251,35 @@ def seed_app_security(db, tag_to_id: dict[str, int]) -> None:
         print(f"Secret scan of sample leaked config found and recorded {len(found)} matches.")
 
 
+def seed_monitoring_and_incidents(db) -> None:
+    if monitoring_service.list_events(db):
+        print("Security events already seeded - skipping.")
+    else:
+        for event_type, username, source_ip, source_location, details, offset_minutes in (
+            NORTHSTAR_SECURITY_EVENTS
+        ):
+            monitoring_service.create_event(
+                db,
+                dict(
+                    event_type=event_type,
+                    username=username,
+                    source_ip=source_ip,
+                    source_location=source_location,
+                    details=details,
+                    occurred_at=BASE_EVENT_TIME + timedelta(minutes=offset_minutes),
+                ),
+            )
+        print(f"Created {len(NORTHSTAR_SECURITY_EVENTS)} security events.")
+
+    if incident_service.list_incidents(db):
+        print("Incidents already seeded - skipping.")
+    else:
+        incident = incident_service.create_incident(db, dict(NORTHSTAR_INCIDENT))
+        for _stage, description in NORTHSTAR_INCIDENT_PROGRESS:
+            incident_service.advance_stage(db, incident, description)
+        print("Created 1 seeded incident with a multi-stage timeline.")
+
+
 def main():
     Base.metadata.create_all(bind=engine)
     db = SessionLocal()
@@ -253,6 +291,7 @@ def main():
         seed_vulnerabilities(db, tag_to_id)
         seed_iam_and_cloud(db, tag_to_id)
         seed_app_security(db, tag_to_id)
+        seed_monitoring_and_incidents(db)
     finally:
         db.close()
 

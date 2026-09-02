@@ -172,6 +172,35 @@ export interface SecretFinding {
   status: string;
 }
 
+export interface CorrelationFinding {
+  username: string;
+  severity: string;
+  matched_event_types: string[];
+  narrative: string;
+}
+
+export interface IncidentTimelineEntry {
+  id: number;
+  stage: string;
+  description: string;
+  occurred_at: string;
+}
+
+export interface Incident {
+  id: number;
+  title: string;
+  description: string;
+  severity: string;
+  stage: string;
+  affected_asset_ids: number[];
+  indicators: string[];
+  recommended_containment: string;
+  remediation: string;
+  lessons_learned: string;
+  detected_at: string;
+  timeline: IncidentTimelineEntry[];
+}
+
 export interface Asset {
   id: number;
   asset_tag: string;

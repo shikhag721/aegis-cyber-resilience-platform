@@ -216,3 +216,9 @@ th {
   font-size: 13px;
   margin-bottom: 12px;
 }
+
+@media print {
+  .sidebar, .print-hide { display: none !important; }
+  .main-content { padding: 0; max-width: none; }
+  .card { break-inside: avoid; }
+}

@@ -18,6 +18,7 @@ from app.api.v1 import (
     cloud,
     continuity,
     controls,
+    dashboard,
     data_security,
     evidence,
     health,
@@ -25,6 +26,7 @@ from app.api.v1 import (
     incidents,
     monitoring,
     rag_security,
+    reports,
     risk,
     threat_modeling,
     vendors,
@@ -53,3 +55,5 @@ api_router.include_router(ai_inventory.router)
 api_router.include_router(ai_security.router)
 api_router.include_router(rag_security.router)
 api_router.include_router(agent_security.router)
+api_router.include_router(dashboard.router)
+api_router.include_router(reports.router)

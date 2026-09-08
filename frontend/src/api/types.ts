@@ -415,6 +415,48 @@ export interface AIAgent {
   guardrails_description: string;
 }
 
+export interface ExecutiveSummary {
+  assets_total: number;
+  assets_by_criticality: Record<string, number>;
+  risks_open: number;
+  risks_by_residual_rating: Record<string, number>;
+  vulnerabilities_open: number;
+  vulnerabilities_overdue: number;
+  vulnerabilities_known_exploited_open: number;
+  iam_findings_total: number;
+  iam_findings_critical: number;
+  cloud_findings_open: number;
+  appsec_findings_open: number;
+  secrets_open: number;
+  incidents_open: number;
+  incidents_open_high_or_critical: number;
+  control_gaps_total: number;
+  control_gaps_critical: number;
+  vendors_high_or_critical: number;
+  data_security_findings: number;
+  continuity_findings: number;
+  ai_governance_gaps: number;
+  ai_governance_gaps_critical: number;
+  rag_findings: number;
+  agents_high_or_critical: number;
+}
+
+export interface ReportHighlight {
+  category: string;
+  title: string;
+  severity: string;
+  detail: string;
+}
+
+export interface ExecutiveReport {
+  generated_at: string;
+  summary: ExecutiveSummary;
+  top_risks: ReportHighlight[];
+  top_control_gaps: ReportHighlight[];
+  top_ai_findings: ReportHighlight[];
+  recommended_actions: string[];
+}
+
 export interface Asset {
   id: number;
   asset_tag: string;

@@ -22,6 +22,7 @@ import AIInventory from "./pages/AIInventory";
 import AISecurity from "./pages/AISecurity";
 import RAGSecurity from "./pages/RAGSecurity";
 import AgentSecurity from "./pages/AgentSecurity";
+import Reports from "./pages/Reports";
 import ModulePlaceholder from "./pages/ModulePlaceholder";
 
 function ProtectedRoutes() {
@@ -31,7 +32,6 @@ function ProtectedRoutes() {
 }
 
 const PLACEHOLDER_MODULES: { path: string; title: string; phase: string }[] = [
-  { path: "reports", title: "Reports", phase: "Phase 13" },
   { path: "settings", title: "Settings", phase: "Phase 1" },
 ];
 
@@ -61,6 +61,7 @@ export default function App() {
           <Route path="/ai-security" element={<AISecurity />} />
           <Route path="/rag-security" element={<RAGSecurity />} />
           <Route path="/agent-security" element={<AgentSecurity />} />
+          <Route path="/reports" element={<Reports />} />
           {PLACEHOLDER_MODULES.map((m) => (
             <Route
               key={m.path}

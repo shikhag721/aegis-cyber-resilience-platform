@@ -353,4 +353,30 @@ Phase-by-phase log, per `docs/decisions/0000-project-phasing.md`.
   format) - fixed by pinning to the current release. All four CI jobs
   are green on the next push.
 
+## Phase 13 — Executive dashboard + reports
+- `app/services/dashboard.py::build_executive_summary` - pure aggregation
+  over every existing domain module (no new state, no new scoring logic):
+  asset counts by criticality, open risks by residual rating, overdue and
+  known-exploited vulnerabilities, IAM/cloud/app-security/secrets finding
+  counts, open incidents by severity, control gaps, vendors and AI agents
+  at High/Critical, AI governance gaps, and RAG findings. Every number
+  traces back to a stored field or an existing deterministic analyzer
+  (`analyze_ai_inventory`, `analyze_control_gaps`, etc.) - the dashboard
+  invents no new judgment calls.
+- `GET /api/v1/dashboard/summary` (the live metric cards) and
+  `GET /api/v1/reports/executive-summary` (a fuller narrative report:
+  top 5 risks/control gaps/AI findings by severity, plus threshold-based
+  `recommended_actions` - e.g. "N Critical-residual-risk item(s)" only
+  appears once that count is greater than zero, never an LLM-generated
+  recommendation).
+- Rebuilt the Phase 0 Dashboard placeholder into real metric cards
+  (Risk & Vulnerability / Governance & Response / AI Security /
+  Environment groups, each card linking to its source page) and built
+  the Reports page (narrative summary + a `window.print()` "Print / Save
+  as PDF" affordance, with `@media print` CSS hiding navigation and
+  interactive chrome).
+- 9 new backend tests (220 total); ruff and Bandit clean; verified end to
+  end via Docker Compose with a full force-recreate against real
+  Postgres, through both the backend and frontend proxy.
+
 *(Subsequent phases appended here as completed.)*

@@ -111,10 +111,11 @@ pytest
 
 ## Status
 
-This repository is under active, phased build (see `docs/decisions/0000-project-phasing.md`).
-Each phase is tested, documented, and pushed before the next begins — see
-the commit history for progress, and `CHANGELOG.md` for a phase-by-phase
-summary.
+All 14 phases of the planned build are complete (see
+`docs/decisions/0000-project-phasing.md` for the phase order). Each phase
+was tested, documented, and pushed independently — see the commit
+history for progress, and `CHANGELOG.md` for a phase-by-phase summary
+ending with Phase 14's final security review and portfolio hardening.
 
 ## License
 

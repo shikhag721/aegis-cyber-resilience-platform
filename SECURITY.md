@@ -30,9 +30,11 @@ remediation - not exploitation).
   `.env.example` (placeholder values) is tracked.
 - CI includes a secret-scanning step (see `.github/workflows/`) intended to
   catch accidental commits before merge.
-- Passwords are hashed (bcrypt via passlib/argon2, see
-  `backend/app/core/security.py`); JWT signing keys are read from
-  environment variables only.
+- Passwords are hashed with Argon2id (via `argon2-cffi`), not bcrypt/passlib
+  — see `backend/app/core/security.py` and
+  `docs/decisions/0006-password-hashing-argon2.md` for why (a real
+  incompatibility between unmaintained `passlib` and modern `bcrypt`
+  releases). JWT signing keys are read from environment variables only.
 - If you fork this repo, generate your own `JWT_SECRET_KEY` and database
   credentials - never reuse the example values beyond local development.
 
@@ -47,6 +49,9 @@ Documented in detail in `docs/architecture/` and enforced by
 - SQLAlchemy ORM with parameterized queries only - no raw string-interpolated SQL.
 - Input validation via Pydantic schemas on every API boundary.
 - CORS restricted to configured origins; security headers set on all responses.
+- Rate limiting on `/auth/login` (slowapi, in-memory) to blunt brute-force
+  and credential-stuffing attempts — see
+  `docs/architecture/limitations.md` for the single-process caveat.
 - An append-only audit log for state-changing governance actions (risk
   status changes, control status changes, evidence changes) - see
   `docs/architecture/audit-log.md`.

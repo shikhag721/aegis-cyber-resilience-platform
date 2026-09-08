@@ -12,6 +12,10 @@ import tempfile
 TEST_DB_PATH = os.path.join(tempfile.gettempdir(), "aegis_backend_test.db")
 os.environ.setdefault("DATABASE_URL", f"sqlite:///{TEST_DB_PATH}")
 os.environ.setdefault("JWT_SECRET_KEY", "test-only-secret-not-for-production")
+# make_auth_headers() below calls the real /auth/login endpoint dozens of
+# times per test run - rate limiting is exercised directly in
+# test_rate_limit.py against its own app instance instead.
+os.environ.setdefault("RATE_LIMIT_ENABLED", "false")
 
 import pytest
 from fastapi.testclient import TestClient

@@ -3,15 +3,20 @@
 Security controls applied here (see SECURITY.md):
 - CORS restricted to configured origins only.
 - Baseline security response headers on every response.
+- Rate limiting on authentication endpoints (see app/core/rate_limit.py).
 - No debug/reload in non-development environments (enforced by the
   Dockerfile/uvicorn invocation, not this module).
 """
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
+from slowapi import _rate_limit_exceeded_handler
+from slowapi.errors import RateLimitExceeded
+from slowapi.middleware import SlowAPIMiddleware
 
 from app import models  # noqa: F401 - registers all ORM models on Base.metadata
 from app.api.v1 import api_router
 from app.core.config import get_settings
+from app.core.rate_limit import limiter
 
 settings = get_settings()
 
@@ -23,8 +28,12 @@ def create_app() -> FastAPI:
             "Portfolio project simulating the security and AI-risk program of a fictional "
             "financial services company. Not a production security product - see SECURITY.md."
         ),
-        version="0.1.0",
+        version="1.0.0",
     )
+
+    app.state.limiter = limiter
+    app.add_exception_handler(RateLimitExceeded, _rate_limit_exceeded_handler)
+    app.add_middleware(SlowAPIMiddleware)
 
     app.add_middleware(
         CORSMiddleware,

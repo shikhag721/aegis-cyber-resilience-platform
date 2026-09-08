@@ -30,12 +30,16 @@ infra/docker/          Dockerfiles + docker-compose.yml
 
 ## Adding a new domain module (example: "widgets")
 
-1. `backend/app/models/widgets.py` — SQLAlchemy model(s).
+1. `backend/app/models/widgets.py` — SQLAlchemy model(s), imported in
+   `backend/app/models/__init__.py` so `Base.metadata` discovers it.
 2. `backend/app/schemas/widgets.py` — Pydantic create/read/update schemas.
 3. `backend/app/services/widgets.py` — business logic (calls risk_engine if relevant).
-4. `backend/app/api/v1/widgets.py` — FastAPI router; mount in `main.py`.
-5. `backend/tests/test_widgets_api.py` + a service/unit test.
-6. `frontend/src/pages/Widgets/` — list + detail views, added to the nav.
+4. `backend/app/api/v1/widgets.py` — FastAPI router; mount it in
+   `backend/app/api/v1/__init__.py` (the single place every domain
+   router is registered — see that file's own docstring).
+5. `backend/tests/test_widgets_service.py` + `test_widgets_api.py`.
+6. `frontend/src/pages/Widgets.tsx` — added to the nav in
+   `frontend/src/components/Layout.tsx` and routed in `frontend/src/App.tsx`.
 7. Document it: what problem it solves, what risk/control concept it
    demonstrates, and its limitations — see any existing `docs/` module doc
    as a template.

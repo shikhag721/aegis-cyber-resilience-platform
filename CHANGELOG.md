@@ -379,4 +379,46 @@ Phase-by-phase log, per `docs/decisions/0000-project-phasing.md`.
   end via Docker Compose with a full force-recreate against real
   Postgres, through both the backend and frontend proxy.
 
+## Phase 14 — Final security review + portfolio hardening
+- **Login rate limiting** (`slowapi`, `app/core/rate_limit.py`): `/auth/login`
+  now enforces a configurable limit (default `10/minute`, keyed by client
+  IP) against brute-force/credential-stuffing attempts - a real,
+  documented limitation (`docs/architecture/limitations.md`) from Phase 0
+  through Phase 13 that this phase closed rather than just re-documented.
+  Disabled only in the test suite (`RATE_LIMIT_ENABLED=false` in
+  `tests/conftest.py`, since `make_auth_headers()` calls the real login
+  endpoint dozens of times per run); `test_rate_limit.py` re-enables it
+  for its own two tests and verifies both the 401→429 transition and that
+  the rest of the suite genuinely runs with it off. Verified live against
+  the real Docker Compose stack: 10 requests through, 11th+ return 429,
+  normal login still works once the limiter is reset.
+- **Doc-accuracy pass found and fixed three real inconsistencies**
+  between what the docs claimed and what the code actually does:
+  - `SECURITY.md` claimed passwords are hashed with "bcrypt via
+    passlib/argon2" - the actual (and only) implementation is Argon2id
+    via `argon2-cffi`, specifically *because* passlib/bcrypt was broken
+    (ADR 0006). Corrected to name Argon2id only and link the ADR.
+  - `docs/architecture/limitations.md` still said rate limiting was
+    "planned for Phase 6" - stale since Phase 6 shipped without it.
+    Replaced with an accurate description of what Phase 14 actually
+    implemented and its documented single-process/in-memory caveat.
+  - `.env.example` never listed `DEMO_ADMIN_PASSWORD` /
+    `DEMO_ANALYST_PASSWORD` / `DEMO_VIEWER_PASSWORD`, even though
+    `docs/deployment/README.md` referenced them and
+    `scripts/seed_demo_data.py` reads them. Added with defaults.
+  - `CONTRIBUTING.md`'s "adding a new module" guide said to mount routers
+    in `main.py` (they're mounted in `app/api/v1/__init__.py`) and used a
+    `pages/Widgets/` folder convention no module actually follows (every
+    page is a flat `.tsx` file). Corrected both.
+- **RBAC coverage re-verified programmatically**, not just by reading
+  code: a script parsed every route function signature across all 20
+  domain routers and confirmed every single one depends on
+  `require_role(...)` (no endpoint reachable without an auth guard).
+- **Full repository secret scan** (gitleaks, all 22 commits at the time)
+  confirmed no leaked credentials in git history.
+- App version bumped from `0.1.0` to `1.0.0` in `app/main.py`, marking
+  all 14 planned phases complete.
+- 2 new backend tests (222 total); ruff, Bandit, and `pip-audit` clean;
+  verified end to end via Docker Compose against real Postgres.
+
 *(Subsequent phases appended here as completed.)*

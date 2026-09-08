@@ -9,7 +9,8 @@
 | API / integration | pytest + FastAPI TestClient | Endpoint behaviour, auth flows, expected success AND expected failure |
 | Security regression | pytest | Specific "must never happen" assertions - e.g. username enumeration, missing-auth 401s |
 | Static analysis | ruff, bandit | Lint + Python security anti-pattern scanning |
-| Dependency scan | pip-audit | Known-CVE dependencies |
+| Dependency scan | pip-audit (backend), `npm audit` (frontend) | Known-CVE dependencies, blocking in CI except one documented exception (ADR 0010) |
+| Container scan | Trivy (CI) | CVEs in the built Docker images themselves - OS packages and bundled tool dependencies, not just app dependencies (see CHANGELOG.md Phase 12) |
 | Secret scan | gitleaks (CI) | Accidental credential commits |
 | Frontend | `tsc --build` + `vite build` in CI | Type safety and build correctness |
 
@@ -29,7 +30,8 @@ cd backend
 pip install -r requirements-dev.txt
 pytest                      # fast path, SQLite
 ruff check .
-bandit -r app -x tests
+bandit -c pyproject.toml -r app -x tests
+pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-1325
 ```
 
 ## A caught gotcha: verifying against a stale Docker image

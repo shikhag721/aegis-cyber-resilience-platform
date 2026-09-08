@@ -24,8 +24,13 @@ applied there.
   Docker's default bridge network, no secrets manager — `.env` only).
 - The frontend Docker image runs Vite's dev server, not a production
   Nginx-served static build — documented in `infra/docker/frontend.Dockerfile`.
-- Rate limiting is not yet implemented (planned for Phase 6 alongside
-  application/API security hardening).
+- Rate limiting on `/auth/login` (Phase 14, `app/core/rate_limit.py`) uses
+  slowapi's default in-memory storage, keyed by client IP — correct for
+  this single-process demo deployment, but would need a shared backend
+  (Redis) behind a real load balancer with multiple backend instances,
+  where each process would otherwise track its own independent counter.
+  Other endpoints are not rate-limited; `/auth/login` was prioritized as
+  the actual brute-force/credential-stuffing target.
 
 ## Risk & GRC methodology
 - The risk-scoring methodology (see `docs/risk-methodology/` once Phase 3

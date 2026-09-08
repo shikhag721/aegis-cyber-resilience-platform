@@ -24,6 +24,14 @@ class Settings(BaseSettings):
 
     cors_allowed_origins: str = "http://localhost:5173"
 
+    # slowapi rate-limit string, e.g. "10/minute" - applied to /auth/login
+    # to blunt credential-stuffing/brute-force attempts (Phase 14 hardening).
+    login_rate_limit: str = "10/minute"
+    # Disabled only by the test suite (conftest.py sets this before the app
+    # is imported) - tests authenticate dozens of times per run via the
+    # real /auth/login endpoint, which would otherwise trip the limiter.
+    rate_limit_enabled: bool = True
+
     anthropic_api_key: str | None = None
 
     @property

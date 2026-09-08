@@ -1,5 +1,7 @@
 # AEGIS — Enterprise Cyber Resilience & AI Security Risk Platform
 
+[![CI](https://github.com/shikhag721/aegis-cyber-resilience-platform/actions/workflows/ci.yml/badge.svg)](https://github.com/shikhag721/aegis-cyber-resilience-platform/actions/workflows/ci.yml)
+
 A portfolio-grade cybersecurity platform simulating the security and AI-risk
 program of a fictional financial services company, **Northstar Financial
 Services** (~500 employees). AEGIS connects technical security findings to

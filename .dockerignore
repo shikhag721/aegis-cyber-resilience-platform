@@ -1,0 +1,29 @@
+# Build context is the repo root (see infra/docker/docker-compose.yml).
+# Without this file, `COPY backend/ .` / `COPY frontend/ .` pull local dev
+# artifacts straight into the image - found in Phase 12 via a Trivy image
+# scan that flagged a stray Windows .venv/ (153MB, wrong-platform binaries)
+# baked into the backend image. See CHANGELOG.md Phase 12 entry.
+
+.git
+.github
+
+# Backend dev artifacts - never belong in the image; the image builds its
+# own dependencies from requirements.txt.
+backend/.venv
+backend/venv
+backend/.pytest_cache
+backend/.ruff_cache
+backend/.coverage
+backend/aegis_dev.db
+backend/bandit-report.json
+**/__pycache__
+**/*.pyc
+
+# Frontend dev artifacts - the image runs its own `npm install`.
+frontend/node_modules
+frontend/dist
+
+# Editor/OS noise
+.vscode
+.idea
+**/.DS_Store

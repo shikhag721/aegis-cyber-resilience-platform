@@ -69,10 +69,17 @@ jobs:
 
       - name: Dependency vulnerability scan (pip-audit)
         working-directory: backend
-        run: pip-audit -r requirements.txt || true
-        # Non-blocking initially (pip-audit can flag transitive CVEs with no
-        # available fix); tightened to fail-on-critical once the dependency
-        # baseline is established - see docs/decisions/ for the follow-up.
+        # Blocking: fails the build on any known vulnerability except the
+        # one documented, scoped exception below. See
+        # docs/decisions/0010-ecdsa-cve-accepted-risk.md for why that one
+        # specific advisory (an unfixed timing side-channel in an ECDSA
+        # code path this app never executes - it only signs JWTs with
+        # HS256) is ignored by ID rather than the whole scan being
+        # non-blocking. A new vulnerability in any dependency, including a
+        # different future ecdsa CVE, still fails CI.
+        run: |
+          pip-audit -r requirements.txt --ignore-vuln PYSEC-2026-1325
+          pip-audit -r requirements-dev.txt --ignore-vuln PYSEC-2026-1325
 
       - name: Secret scan (gitleaks)
         uses: gitleaks/gitleaks-action@v2
@@ -94,6 +101,40 @@ jobs:
         working-directory: frontend
         run: npm install
 
+      - name: Dependency vulnerability scan (npm audit)
+        working-directory: frontend
+        run: npm audit --audit-level=high
+
       - name: Type-check + build
         working-directory: frontend
         run: npm run build
+
+  container-scan:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Build backend image
+        run: docker build -f infra/docker/backend.Dockerfile -t aegis-backend:ci .
+
+      - name: Build frontend image
+        run: docker build -f infra/docker/frontend.Dockerfile -t aegis-frontend:ci .
+
+      # ignore-unfixed: same principle as ADR 0010 - a blocking gate should
+      # fail on actionable findings (a fix exists, apply it), not on
+      # unfixed base-image CVEs nothing here can currently resolve.
+      - name: Scan backend image (Trivy)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: aegis-backend:ci
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"
+
+      - name: Scan frontend image (Trivy)
+        uses: aquasecurity/trivy-action@0.28.0
+        with:
+          image-ref: aegis-frontend:ci
+          severity: CRITICAL,HIGH
+          ignore-unfixed: true
+          exit-code: "1"

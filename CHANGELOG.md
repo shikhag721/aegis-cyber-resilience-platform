@@ -287,4 +287,58 @@ Phase-by-phase log, per `docs/decisions/0000-project-phasing.md`.
   to end via Docker Compose with a full force-recreate against real
   Postgres, through both the backend and frontend proxy.
 
+## Phase 12 — DevSecOps (CI security gates)
+- **Dependency vulnerability baseline cleared.** `pip-audit` against
+  `requirements.txt` started this phase at 19 known vulnerabilities
+  across `fastapi`/`starlette`, `python-jose`, `python-multipart`, and
+  `python-dotenv`. Upgraded all four (`fastapi` 0.115.4→0.141.1,
+  `starlette` 0.41.3→1.3.1, `python-jose` 3.3.0→3.5.0, `python-multipart`
+  0.0.12→0.0.31, `python-dotenv` 1.0.1→1.2.2, plus the transitive
+  `pyasn1` 0.4.8→0.6.4) and `pytest` 8.3.3→9.0.3 in `requirements-dev.txt`
+  (PYSEC-2026-1845), re-running the full 211-test suite after every jump
+  to confirm no breakage. Down to one remaining finding: `ecdsa`
+  (PYSEC-2026-1325), which has no fix release - see below.
+- **`pip-audit` promoted from non-blocking to a hard CI gate**, scoped
+  with a single documented exception (`--ignore-vuln PYSEC-2026-1325`)
+  rather than a blanket `|| true`. `docs/decisions/0010-ecdsa-cve-accepted-risk.md`
+  explains why: `ecdsa` is an unfixed, transitive dependency of
+  `python-jose` that this app's code never actually exercises (the JWT
+  implementation hardcodes `HS256` and passes an explicit `algorithms=`
+  allowlist to `jwt.decode()` - see `app/core/security.py` - so the
+  vulnerable ECDSA code path is present but unreachable). Any *other*
+  future vulnerability, including a different `ecdsa` CVE, still fails
+  CI. Same contextual-risk principle as the risk engine's own CVSS
+  handling (Section 9), applied to the dependency-scan gate itself.
+- **Container image scanning added** (`container-scan` CI job): builds
+  both Docker images and runs Trivy against each (`--severity
+  CRITICAL,HIGH --ignore-unfixed`, blocking). This caught two real,
+  separate issues neither `pip-audit` nor `npm audit` could see, since
+  both only look at direct application dependencies, not what's actually
+  in the built image:
+  - **No `.dockerignore` existed.** `COPY backend/ .` was pulling the
+    local Windows `.venv/` (153MB, wrong-platform binaries), `.coverage`,
+    `.pytest_cache`, `.ruff_cache`, and `__pycache__` straight into the
+    backend image - found by Trivy scanning package metadata that turned
+    out to belong to a stray dev environment, not the image's own
+    dependency install. Added a root-level `.dockerignore`; backend image
+    shrank 754MB → 341MB with the leakage gone.
+  - **The frontend's `node:20-slim` base image and its bundled npm CLI
+    carried real, fixable CVEs**: 6 Debian OS packages (`libcap2`,
+    `libgnutls30` - 2 critical) and 20 vulnerabilities in npm's own
+    internal dependencies (`tar`, `glob`, `minimatch`, `sigstore`, etc.)
+    vendored inside the npm CLI itself - not this project's dependencies,
+    which `npm audit` already reported clean. Fixed by adding
+    `apt-get update && apt-get upgrade -y` and `npm install -g npm@11`
+    (npm's own `npm@latest` requires Node 22+, incompatible with the
+    `node:20-slim` base) to `infra/docker/frontend.Dockerfile`. Both
+    images now scan clean at CRITICAL/HIGH with `--ignore-unfixed`.
+- **`npm audit --audit-level=high` added as a blocking CI step** for the
+  frontend's own dependencies (currently clean).
+- CI status badge added to `README.md`.
+- Full Docker Compose rebuild and end-to-end re-verification (login,
+  asset list) through both the backend and frontend proxy after every
+  dependency/Dockerfile change in this phase; full backend suite (211
+  tests), ruff, Bandit, and `pip-audit` re-run clean against the final
+  pinned versions.
+
 *(Subsequent phases appended here as completed.)*

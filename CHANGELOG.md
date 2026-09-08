@@ -340,5 +340,17 @@ Phase-by-phase log, per `docs/decisions/0000-project-phasing.md`.
   dependency/Dockerfile change in this phase; full backend suite (211
   tests), ruff, Bandit, and `pip-audit` re-run clean against the final
   pinned versions.
+- **Checking the actual GitHub Actions run after pushing (not just local
+  runs) caught two more real CI bugs**, both pre-existing (Phase 10 and
+  11's CI runs had been silently failing on the first one for days):
+  the `security-scan` job installed `bandit`/`pip-audit` unpinned instead
+  of from `requirements-dev.txt`, so an unpinned `bandit` upgrade's
+  stricter `B105` heuristic flagged two remediation-advice strings in
+  `app/services/appsec.py` as "hardcoded passwords" - fixed by pinning
+  the install and adding justified `# nosec B105` comments so it stays
+  fixed regardless of bandit version; and `container-scan` referenced a
+  nonexistent Trivy action tag (`@0.28.0` instead of the actual `@v0.28.0`
+  format) - fixed by pinning to the current release. All four CI jobs
+  are green on the next push.
 
 *(Subsequent phases appended here as completed.)*

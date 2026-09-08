@@ -86,8 +86,8 @@ def scan_and_record(db: Session, text: str, location: str, exposure: str) -> lis
 def _rotation_recommendation(secret_type) -> str:
     return {
         "aws_access_key": "Rotate the AWS access key immediately via IAM and invalidate the old key.",
-        "slack_token": "Revoke the Slack token in the Slack app admin console and issue a new one.",
+        "slack_token": "Revoke the Slack token in the Slack app admin console and issue a new one.",  # nosec B105 - remediation text, not a credential
         "private_key": "Revoke and reissue the private key/certificate; investigate what it authenticated.",
         "generic_api_key": "Rotate the API key with the issuing provider and update all consumers.",
-        "password_assignment": "Rotate the password and move it to a secrets manager, not source code.",
+        "password_assignment": "Rotate the password and move it to a secrets manager, not source code.",  # nosec B105 - remediation text, not a credential
     }.get(str(secret_type), "Rotate the credential and move it to a secrets manager.")
